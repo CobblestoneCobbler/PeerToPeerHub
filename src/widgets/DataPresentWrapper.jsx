@@ -12,6 +12,7 @@ export function DataPresentWrapper({managersName, giverName,rows, prompts}){
         </>
     )
 }
+//TODO post request
 
 function generateData(rows, prompts, firstName, lastName, managersName){
     let result =  [];
