@@ -1,0 +1,87 @@
+.DBEntry-Container,
+.PromptGiver,
+.CardEntrySection,
+.SubmissionCenter,
+.tmTarget {
+    width: 80vw;
+    margin:auto;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #9AA4BA;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    border-radius: 20px;
+}
+
+.tmTarget div {
+    width: 100px;
+    height: 50px;
+    background-color: red;
+}
+
+.DBEntry-Container form{
+    background-color: #576575;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+/*Prompt giver */
+.promptList{
+    min-width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    align-items: center;
+    gap: 5px;
+}
+.promptList .list{
+    margin-top: 30px;
+    max-width: 80%;
+    min-width: 40%;
+    display: flex;
+    flex-direction: column;
+}
+.promptList .list .prompt{
+    text-align: center;
+}
+.promptList .list .prompt.active{
+    background-color: #576575;
+    border-radius: 20px;
+    border-left:  10px solid #0070ee;
+    border-right:  10px solid #0070ee;
+}
+.promptList .list .submit {
+    margin-top: 20px;
+    padding: 5px 10px;
+    text-align: center;
+    background-color: #576575;
+    border-radius: 15px;
+}
+.promptList .list .submit:hover{
+    border: 2px solid  #0070ee;
+}
+
+.title-row{
+    min-width: 40%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: 5px;
+}
+.operator-row {
+    min-width: 40%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 5px;
+}
+.checklist {
+    display:flex;
+    flex-direction: row;
+    justify-content: start;
+    gap: 2px;
+}
+
+

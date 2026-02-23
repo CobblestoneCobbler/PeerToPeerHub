@@ -1,0 +1,47 @@
+section,
+footer,
+header,
+main,
+nav {
+    display: block;
+}
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    transition-duration: 0.5s;
+}
+a {
+    text-decoration: none;
+    background-color: transparent;
+    color: black;
+}
+
+body{
+    background-color: var(--bg);
+    margin: 0;
+}
+
+.hidden{
+    display: none;
+}
+
+input{
+  
+  background: none;
+  border: none;
+}
+
+form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px, 20px;
+}
+
+form .input-set {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
