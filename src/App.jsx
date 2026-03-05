@@ -34,6 +34,18 @@ function App() {
     localStorage.setItem("prompts", JSON.stringify(prompts));
   }
   
+  const getPromptsSignature = (ps) => (ps || []).map(p=>p.nick).join('|');
+  const loadSavedRows = () => {
+    try{
+      return JSON.parse(localStorage.getItem('rows'));
+    }catch(e){ return null; }
+  }
+  const saveRowsToStorage = (rowsToSave) => {
+    const signature = getPromptsSignature(reservedPrompts);
+    const payload = { signature, rows: rowsToSave };
+    localStorage.setItem('rows', JSON.stringify(payload));
+  }
+
   function makeOperator(firstName,lastName, group = null){
     if(operators.find(n => {
       if(n.firstName === firstName && n.lastName === lastName){
@@ -47,6 +59,7 @@ function App() {
 
     operators.push({firstName:firstName,lastName:lastName, group:group});
     localStorage.setItem("operators", JSON.stringify(operators))
+    buildRows();
   }
 
   function makePrompt(description,level,rating,category,nick){
@@ -61,60 +74,55 @@ function App() {
   function promptReserve(prompts){
     reservedPrompts = prompts;
     localStorage.setItem("reserved", JSON.stringify(reservedPrompts));
+    const saved = loadSavedRows();
+    const newSig = getPromptsSignature(reservedPrompts);
+    if(!saved || saved.signature !== newSig){
+      localStorage.removeItem('rows');
+    }
     buildRows();
     setIsReserved(true);
   }
 
   function buildRows(){
-    let result = [];
-    for(let operator of operators){
-      let row = [operator];
-      for(let p of reservedPrompts){
-        row.push(false);
+    const signature = getPromptsSignature(reservedPrompts);
+    const saved = loadSavedRows();
+    const savedRows = (saved && saved.signature === signature) ? (saved.rows || []) : [];
+    const result = [];
+    for(const operator of operators){
+      const match = savedRows.find(r => r[0] && r[0].firstName === operator.firstName && r[0].lastName === operator.lastName);
+      if(match && Array.isArray(match) && match.length === (reservedPrompts.length + 1)){
+        const row = [operator, ...match.slice(1)];
+        result.push(row);
+      } else {
+        const row = [operator, ...reservedPrompts.map(()=>false)];
+        result.push(row);
       }
-      result.push(row);
     }
     setRows(result);
+    saveRowsToStorage(result);
   }
   
   function changeRows(filterFunction){
-    let result = rows.map((n,x) =>{
-      return n.map((r,y) =>{
-        if(y === 0){
-          return r;
-        }
-        return filterFunction(x,y,r);
-      })
-    })
+    const result = rows.map((n,x) => n.map((r,y) => (y===0? r : filterFunction(x,y,r))));
     setRows(result);
+    saveRowsToStorage(result);
   }
 
   function updateRows(index, i, value){
-    let result = rows.map((n,x)=>{
-        
-        return n.map((r,y)=>{
-          if(x=== index && y === i){
-            return value;
-          }
-          return r;
-        })
-    });
+    const result = rows.map((n,x)=> n.map((r,y)=> (x===index && y===i) ? value : r ));
     setRows(result);
+    saveRowsToStorage(result);
   }
   
   function updateEntireRow(index){
-    let result = rows.map((n,x)=>{
+    const result = rows.map((n,x)=>{
         if(x === index){
-          return n.map((r, i) =>{
-            if(i === 0){
-              return(r);
-            }
-            return(r?false:true);
-          })
+          return n.map((r, i) => (i===0? r : (r?false:true)));
         }
         return n;
     });
     setRows(result);
+    saveRowsToStorage(result);
     }
 
   function recordPrompts(){
