@@ -6,13 +6,16 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
     const [giverLastName, setGiverLastName] = useState("");
     const [manager, setManagerName] = useState("");
     const [giver,setGiverBool] = useState(false);
-    //TODO Headers, Rows And columns
-    //Operators are row Headers
-    //Prompts are Column headers
-    //Build array to store bools
-    //  Allow operators by group select all / deselect all
 
-    //TODO Local store reserve vs rows. due to refresh safe
+    const groups = {};
+    rows.forEach((r, idx) => {
+        const g = (r && r[0] && r[0].group) || "Ungrouped";
+        if(!groups[g]) groups[g] = [];
+        groups[g].push({row: r, idx});
+    });
+
+    const gridStyle = { gridTemplateColumns: `200px repeat(${prompts.length}, 1fr)` };
+
     return (
         <>
             <div className="CardEntrySection">
@@ -44,31 +47,42 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
 
                     }}>Submit</div>
                 </div>}
-                <div className="title-row">
+
+                <div className="title-row" style={gridStyle}>
+                    <div className="title-name">Operator</div>
                     {prompts.map((p, i)=>{
-                        
                         return(
-                            <div key={`prompt${i+1}`}>
-                                {`${i+1}. ${p.nick}`}
-                            </div>
+                            <div className="title-prompt" key={`prompt${i}`}>{p.nick}</div>
                         )
                     })}
                 </div>
+
                 <div className="switch-all" onClick={()=>{
                     changeRows((x,y,r) => {
                         return r?false:true;
                     })
                 }}>Swap all</div>
-                {/*TODO switch this to be 2 flex boxes, operator names, and checklist
-                    OR Align left and right for each "justify space inbetween"*/ }
-                {rows.map((n,index)=>{
-                    
+
+                {Object.keys(groups).map((groupName)=>{
+                    const items = groups[groupName];
                     return (
-                            <div className="operator-row" key={`row${index}`}>
-                                {operatorRow(n,index, changeRows)}
-                            </div>
+                        <div className="group-block" key={`group-${groupName}`}>
+                            <div className="group-header" onClick={() => {
+                                changeRows((x,y,r) => {
+                                    if(rows[x] && rows[x][0] && rows[x][0].group === groupName){
+                                        return r?false:true;
+                                    }
+                                    return r;
+                                })
+                            }}>{groupName}</div>
+
+                            {items.map(({row, idx}) => (
+                                operatorRow(row, idx, changeRows, prompts.length)
+                            ))}
+                        </div>
                     )
                 })}
+
                 {submitted? "":<div className="submit" onClick={()=>{
                     if(!giver){
                         alert("You must provide a name");
@@ -82,13 +96,12 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
     );
 }
 
-function operatorRow(row, index, changeRows){
-    
-    
-    return (
+function operatorRow(row, index, changeRows, promptCount){
+    const gridStyle = { gridTemplateColumns: `200px repeat(${promptCount}, 1fr)` };
 
-        <>
-            <div className="operator" onClick={()=>{
+    return (
+        <div className="operator-row" style={gridStyle} key={`operator-${index}`}>
+            <div className="operator" onClick={() => {
                 changeRows((x,y,r) =>{
                     if(x === index){
                         return r?false:true;
@@ -96,24 +109,22 @@ function operatorRow(row, index, changeRows){
                     return r;
                 });
             }}>{row[0].firstName}, {row[0].lastName}</div>
-            <div className="checklist">
-                {row.map((r,i) => {
-                    if(i=== 0){
-                        return;
-                    }
-                    return (<div className="checkbox" key={`slot${i}`} onClick={() =>{
+
+            {row.map((r,i) => {
+                if(i === 0) return null;
+                return (
+                    <div className="checkbox" key={`slot${i}`} onClick={() =>{
                         changeRows((x,y,rp) =>{
                             if(x === index && y === i){
                                 return rp?false:true;
                             }
                             return rp;
                         })
-                    }}>{r?"✅":"❌"}</div>);
-                })}
-            </div>
-        </>
+                    }}>{r?"✅":"❌"}</div>
+                )
+            })}
+        </div>
     )
-
 }
 
 function setPrompt(rows, i, state){

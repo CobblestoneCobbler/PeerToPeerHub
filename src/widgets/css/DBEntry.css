@@ -27,7 +27,6 @@
     border-radius: 20px;
 }
 
-/*Prompt giver */
 .promptList{
     min-width: 80%;
     display: flex;
@@ -65,23 +64,71 @@
 
 .title-row{
     min-width: 40%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
+    display: grid;
     gap: 5px;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, rgba(154,164,186,0.95), rgba(154,164,186,0.95));
+    padding: 8px 12px;
+    z-index: 5;
+    border-radius: 8px;
 }
+.title-row .title-name{
+    width: 200px;
+    text-align: left;
+    font-weight: 600;
+}
+.title-row .title-prompt{
+    text-align: center;
+    font-weight: 600;
+}
+
 .operator-row {
     min-width: 40%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
     gap: 5px;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
-.checklist {
+.operator-row .operator{
+    text-align: left;
+    cursor: pointer;
+    padding-left: 6px;
+}
+
+.checkbox{
     display:flex;
-    flex-direction: row;
-    justify-content: start;
-    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.group-block{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.group-header{
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    background-color: #576575;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+@media (max-width: 700px){
+    .title-row .title-name,
+    .operator-row .operator{
+        width: 140px;
+    }
 }
 
 
