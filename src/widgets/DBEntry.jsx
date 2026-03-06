@@ -7,7 +7,6 @@ export function DBEntry({makeOperator, makePrompt}){
     return (
     <>
         <div className="DBEntry-Container" onClick={(e)=>{
-            //TODO add the tile to this as well
             if(e.target.classList.contains("DBEntry-Container"))setActive(active?false:true)
         }}>
             <div>Database Entry</div>

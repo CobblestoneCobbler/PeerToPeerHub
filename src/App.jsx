@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './App.css';
 import { DBEntry } from './widgets/DBEntry';
+import { DBViewer } from './widgets/DBViewer';
 import { PromptGiver } from './widgets/PromptGiver';
 import { CardEntry } from './widgets/CardEntry';
 import { DataPresentWrapper } from './widgets/DataPresentWrapper';
@@ -198,8 +199,9 @@ function App() {
     <>
       <div>
         <div className='tmTarget'>TM Data{totalCount > 0? ` Total Cards to be Submitted: ${totalCount}`:""}</div>
-        <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}></DBEntry>
-        <PromptGiver prompts={prompts} promptReserve={promptReserve}></PromptGiver>
+        <DBViewer operators={operators} prompts={prompts}/>
+        <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}/>
+        <PromptGiver prompts={prompts} promptReserve={promptReserve}/>
         {isReserved? <CardEntry setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} /> : ""}
         {isReserved? <DataPresentWrapper managerName={managersName} giverName={giverName} rows={rows} prompts={reservedPrompts} /> : ""}
       </div>

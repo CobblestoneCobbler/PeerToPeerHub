@@ -1,0 +1,44 @@
+.operators,
+.prompts{
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.opCard{
+    background-color: #576575;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 20%;
+    height: 80px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.promptCard{
+    background-color: #576575;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 45%;
+    height: 220px;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.data-container{
+    padding: 5px;
+    border-radius: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+}

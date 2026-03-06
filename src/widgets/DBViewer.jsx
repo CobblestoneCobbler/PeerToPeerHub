@@ -1,20 +1,32 @@
-export function DBViewer(operators, prompts){
+import { useState } from "react";
+import "./css/DBEntry.css";
+import "./css/DBViewer.css";
 
+export function DBViewer({operators, prompts}){
+    const [active, setActive] = useState(false);
+    
 
 
     return (
         <>
-        <div class="DBViewer">
-            <div className="prompts">
-                {prompts.map((p)=>{
-                    return promptCard(p);
-                })}
+        <div className="DBViewer-Container" onClick={(e)=>{
+            if(e.target.classList.contains("DBViewer-Container")) setActive(active?false:true);
+        }}>
+            <div>Database Viewer</div>
+            {active &&
+            <div className="wrapper">
+                <div className="operators">
+                    {operators.map((op)=>{
+                        return operatorCard(op);
+                    })}
+                </div>
+                <div className="prompts">
+                    {prompts.map((p)=>{
+                        return promptCard(p);
+                    })}
+                </div>
             </div>
-            <div className="operators">
-                {operators.map((op)=>{
-                    return operatorCard(op);
-                })}
-            </div>
+            }
         </div>
         </>
     );
@@ -24,22 +36,22 @@ function promptCard(p) {
 
 
     return (
-        <>
-        <div class="promptCard">
-            <div className="basicPromptInfo">
-                <div>{p.nick}</div>
-                <div>{p.level}</div>
-                <div>{p.rating}</div>
-                <div>{p.category}</div>
+        <div key={p.nick} className ="promptCard">
+            <div>{p.nick}</div>
+            <div className="data-container">
+                <div className="basicPromptInfo">
+                    <div>{p.level}</div>
+                    <div>{p.rating}</div>
+                    <div>{p.category}</div>
+                </div>
+                <div className="stats">
+                    <div>{`Times used: ${p.timesUsed}`}</div>
+                    <div>{`Total cards: ${p.totalCards}`}</div>
+                    <div>{`Average cards: ${Math.floor(p.totalCards / p.timesUsed)}`}</div>
+                </div>
             </div>
             <div className="desc">{p.description}</div>
-            <div className="stats">
-                <div>{`Times used: ${p.timesUsed}`}</div>
-                <div>{`Total cards: ${p.totalCards}`}</div>
-                <div>{`Average cards: ${Math.floor(p.totalCards / p.timesUsed)}`}</div>
-            </div>
         </div>
-        </>
     )
 }
 
@@ -47,16 +59,17 @@ function operatorCard(op) {
 
 
     return (
-        <>
-        <div class="opCard">
-            <div>{op.firstName}</div>
-            <div>{op.lastName}</div>
+        
+        <div key={`${op.firstName}-${op.lastName}`} className="opCard">
+            <div>{`${op.firstName} ${op.lastName}`}</div>
             <div>{op.group}</div>
         </div>
-        </>
+        
     )
 }
 
 function removeOperator(firstName,lastName){
     //filter for n.firstName === firstName && n.lastName === lastName
 }
+
+//TODO add delete functionality for both prompts and operators. For prompts, also add the ability to edit the prompt details.
