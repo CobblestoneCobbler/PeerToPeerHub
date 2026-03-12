@@ -1,3 +1,9 @@
+.wrapper{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .operators,
 .prompts{
     display: flex;

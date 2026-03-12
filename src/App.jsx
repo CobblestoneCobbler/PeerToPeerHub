@@ -63,6 +63,13 @@ function App() {
     buildRows();
   }
 
+  function removeOperator(firstName,lastName){
+    
+        operators = operators.filter(n => n.firstName !== firstName && n.lastName !== lastName);
+        localStorage.setItem("operators", JSON.stringify(operators));
+        buildRows()
+    }
+
   function makePrompt(description,level,rating,category,nick){
     if(prompts.find(n => n.nick === nick)){
       alert("Nick already in use.");
@@ -199,7 +206,7 @@ function App() {
     <>
       <div>
         <div className='tmTarget'>TM Data{totalCount > 0? ` Total Cards to be Submitted: ${totalCount}`:""}</div>
-        <DBViewer operators={operators} prompts={prompts}/>
+        <DBViewer operators={operators} prompts={prompts} removeOperator={removeOperator}/>
         <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}/>
         <PromptGiver prompts={prompts} promptReserve={promptReserve}/>
         {isReserved? <CardEntry setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} /> : ""}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./css/DBEntry.css";
 import "./css/DBViewer.css";
 
-export function DBViewer({operators, prompts}){
+export function DBViewer({operators, prompts, removeOperator}){
     const [active, setActive] = useState(false);
     
 
@@ -17,7 +17,7 @@ export function DBViewer({operators, prompts}){
             <div className="wrapper">
                 <div className="operators">
                     {operators.map((op)=>{
-                        return operatorCard(op);
+                        return <OperatorCard op ={op} removeOperator={removeOperator} />;
                     })}
                 </div>
                 <div className="prompts">
@@ -55,21 +55,21 @@ function promptCard(p) {
     )
 }
 
-function operatorCard(op) {
-
+function OperatorCard({op,removeOperator}) {
+    const [primed, setPrimed] = useState(false);
 
     return (
         
         <div key={`${op.firstName}-${op.lastName}`} className="opCard">
             <div>{`${op.firstName} ${op.lastName}`}</div>
             <div>{op.group}</div>
+            {primed? <button className="Warning" onClick={()=> removeOperator(op.firstName, op.lastName)}>Are You Sure?</button> : <button onClick={() => setPrimed(true)
+            }>Delete Operator</button>}
         </div>
         
     )
 }
 
-function removeOperator(firstName,lastName){
-    //filter for n.firstName === firstName && n.lastName === lastName
-}
+
 
 //TODO add delete functionality for both prompts and operators. For prompts, also add the ability to edit the prompt details.
