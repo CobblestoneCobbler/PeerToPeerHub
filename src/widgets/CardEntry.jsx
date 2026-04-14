@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function CardEntry({setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
     const [submitted, setSubmitted] = useState(false);
@@ -6,6 +6,14 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
     const [giverLastName, setGiverLastName] = useState("");
     const [manager, setManagerName] = useState("");
     const [giver,setGiverBool] = useState(false);
+    const firstNameRef = useRef(null);
+
+    useEffect(()=>{
+        // focus the first name input when the giver form is visible
+        if(!giver && firstNameRef.current){
+            firstNameRef.current.focus();
+        }
+    },[giver]);
 
     const groups = {};
     rows.forEach((r, idx) => {
@@ -18,12 +26,12 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
 
     return (
         <>
-            <div className="CardEntrySection">
+            <div className="CardEntrySection card">
                 <div>Card Entry</div>
                 {!giver && <div className="GiverEntry">
 
                     {/*TODO Submit attempt on loose focus? */}
-                    <input type="text" id="giverFirstName" placeholder="Your First Name" value={giverFirstName} onChange={(e)=>{
+                    <input ref={firstNameRef} type="text" id="giverFirstName" placeholder="Your First Name" value={giverFirstName} onChange={(e)=>{
                         setGiverFirstName(e.target.value);
                     }}/>
                     <input type="text" id="giverLastName" placeholder="Your Last Name" value={giverLastName} onChange={(e)=>{

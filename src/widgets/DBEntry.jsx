@@ -3,15 +3,12 @@ import { useState } from "react";
 
 //TODO Maybe make this as an idea but let app do this, then call the appropriate. also change make operator to more localized (assuming local storage setting can be done outside of the parent app since the app itself doesnt need it till input)
 export function DBEntry({makeOperator, makePrompt}){
-    const [active, setActive] = useState(false);
     return (
     <>
-        <div className="DBEntry-Container" onClick={(e)=>{
-            if(e.target.classList.contains("DBEntry-Container"))setActive(active?false:true)
-        }}>
+        <div className="DBEntry-Container entry">
             <div>Database Entry</div>
-            {active && <OperatorEntry makeOperator={makeOperator}/>}
-            {active && <PromptEntry makePrompt={makePrompt}/>}
+            <OperatorEntry makeOperator={makeOperator}/>
+            <PromptEntry makePrompt={makePrompt}/>
         </div>
     </>
     );

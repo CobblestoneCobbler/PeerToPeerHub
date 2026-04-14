@@ -1,15 +1,22 @@
+/* Minimal global tokens and font settings - decorative styles moved to App.css */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* minimal color / theme tokens */
+  --bg: #07080a;
+  --text: rgba(255,255,255,0.92);
+  --glass-border: rgba(255,255,255,0.03);
+  --accent-a: #00f0ff;
+  --accent-b: #7a4bff;
+  --accent-c: #28ffc6;
+
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.45;
   font-weight: 400;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Keep body minimal; heavier background/hero visuals live in App.css */
+body {
+  margin: 0;
+  color: var(--text);
+  background-color: var(--bg);
 }
 

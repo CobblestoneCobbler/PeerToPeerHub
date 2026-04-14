@@ -16,6 +16,14 @@ function App() {
   const [giverName, setGiverName] = useState(["",""]);
   const [managersName, setManagersName] = useState("");
 
+  // Add tab state and tab definitions for top navigation
+  const [activeTab, setActiveTab] = useState('promptsTab');
+  const tabs = [
+    { id: 'viewer', label: 'DB Viewer' },
+    { id: 'entry', label: 'DB Entry' },
+    { id: 'promptsTab', label: 'Prompt Giver' },
+    { id: 'card', label: 'Card Entry' }
+    ];
 
   let reservedPrompts = JSON.parse(localStorage.getItem("reserved"));
   if(reservedPrompts === null){
@@ -169,8 +177,28 @@ function App() {
     setManagersName(name);
   }
 
-
-
+  function renderActiveSection(){
+    switch(activeTab){
+      case 'viewer':
+        return <DBViewer operators={operators} prompts={prompts} removeOperator={removeOperator}/>;
+      case 'entry':
+        return <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}/>;
+      case 'promptsTab':
+        return <PromptGiver prompts={prompts} promptReserve={promptReserve} setActiveTab={setActiveTab}/>;
+      case 'card':
+        if(!isReserved){
+          return (
+            <div className={"no-reserve"}>
+              <div className={"note"}>No prompts reserved. Please reserve prompts first.</div>
+              <button className={"go-to-prompts"} onClick={()=>setActiveTab('prompts')}>Go to Prompt Giver</button>
+            </div>
+          );
+        }
+        return <CardEntry setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} />;
+      default:
+        return null;
+    }
+  }
 
   /*Starting prompt:
   *   Receive P2P prompts
@@ -204,13 +232,29 @@ function App() {
   */
   return (
     <>
-      <div>
+      <div className={`app-shell ${activeTab}`}>
         <div className='tmTarget'>TM Data{totalCount > 0? ` Total Cards to be Submitted: ${totalCount}`:""}</div>
-        <DBViewer operators={operators} prompts={prompts} removeOperator={removeOperator}/>
-        <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}/>
-        <PromptGiver prompts={prompts} promptReserve={promptReserve}/>
-        {isReserved? <CardEntry setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} /> : ""}
-        {isReserved? <DataPresentWrapper managerName={managersName} giverName={giverName} rows={rows} prompts={reservedPrompts} /> : ""}
+
+        {/* Top tab bar */}
+        <nav className="tab-bar">
+          {tabs.map(t=> (
+            <button
+              key={t.id}
+              className={`tab ${t.id} ${activeTab===t.id? 'active':''}`}
+              onClick={()=>setActiveTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <main className={`content-area ${activeTab}`}>
+          {renderActiveSection()}
+        </main>
+
+        <div className={"data-present-wrapper"}>
+          <DataPresentWrapper managerName={managersName} giverName={giverName} rows={rows} prompts={reservedPrompts} />
+        </div>
       </div>
     </>
   )

@@ -3,21 +3,14 @@ import "./css/DBEntry.css";
 import "./css/DBViewer.css";
 
 export function DBViewer({operators, prompts, removeOperator}){
-    const [active, setActive] = useState(false);
-    
-
-
     return (
         <>
-        <div className="DBViewer-Container" onClick={(e)=>{
-            if(e.target.classList.contains("DBViewer-Container")) setActive(active?false:true);
-        }}>
+        <div className="DBViewer-Container viewer">
             <div>Database Viewer</div>
-            {active &&
             <div className="wrapper">
                 <div className="operators">
-                    {operators.map((op)=>{
-                        return <OperatorCard op ={op} removeOperator={removeOperator} />;
+                    {operators.map((op,n)=>{
+                        return <OperatorCard op ={op} removeOperator={removeOperator} key={n} />;
                     })}
                 </div>
                 <div className="prompts">
@@ -26,7 +19,6 @@ export function DBViewer({operators, prompts, removeOperator}){
                     })}
                 </div>
             </div>
-            }
         </div>
         </>
     );
@@ -57,19 +49,37 @@ function promptCard(p) {
 
 function OperatorCard({op,removeOperator}) {
     const [primed, setPrimed] = useState(false);
+    const [disabled, setDisabled] = useState(false);
+
+    const handleConfirm = () => {
+        if(disabled) return;
+        setDisabled(true);
+        setPrimed(false);
+        // delay actual removal until end of debounce to avoid accidental double taps
+        setTimeout(() => {
+            removeOperator(op.firstName, op.lastName);
+            setDisabled(false);
+        }, 1000);
+    };
+
+    const armPrimed = () => {
+        setPrimed(true);
+        // auto-reset primed after 3s so it doesn't stay waiting indefinitely
+        setTimeout(() => setPrimed(false), 3000);
+    };
 
     return (
-        
         <div key={`${op.firstName}-${op.lastName}`} className="opCard">
             <div>{`${op.firstName} ${op.lastName}`}</div>
             <div>{op.group}</div>
-            {primed? <button className="Warning" onClick={()=> removeOperator(op.firstName, op.lastName)}>Are You Sure?</button> : <button onClick={() => setPrimed(true)
-            }>Delete Operator</button>}
+            {primed ? (
+                <button className="Warning" disabled={disabled} onClick={handleConfirm}>Are You Sure?</button>
+            ) : (
+                <button onClick={armPrimed}>Delete Operator</button>
+            )}
         </div>
-        
     )
 }
-
 
 
 //TODO add delete functionality for both prompts and operators. For prompts, also add the ability to edit the prompt details.

@@ -1,25 +1,20 @@
 import { useState } from "react";
 
-export function PromptGiver({prompts, promptReserve}){
-    const [active,setActive] = useState(false);
+export function PromptGiver({prompts, promptReserve, setActiveTab}){
     
-
-
     return(
         <>
-            <div className="PromptGiver" onClick={(e)=>{
-                if(e.target.classList.contains("PromptGiver")) setActive(active?false:true);
-            }}>
+            <div className="PromptGiver promptsTab">
                 <div>Prompt Giver</div>
-            {active && <PromptDisplay prompts={prompts} promptReserve={promptReserve} setActive={setActive}/>}
-            {active && <ListPrompts prompts={prompts} promptReserve={promptReserve} setActive={setActive}/>}
+                <PromptDisplay prompts={prompts} promptReserve={promptReserve} setActiveTab={setActiveTab} />
+                <ListPrompts prompts={prompts} promptReserve={promptReserve} setActiveTab={setActiveTab} />
             </div>
         </>
     );
 }
 
 //TODO Factor in target Value
-function PromptDisplay({prompts,promptReserve, setActive}){
+function PromptDisplay({prompts,promptReserve, setActiveTab}){
     const [quantity, setQuantity] = useState(5);
     const [targetCount, setTargetCount] = useState(200);
 
@@ -30,7 +25,10 @@ function PromptDisplay({prompts,promptReserve, setActive}){
                 <form onSubmit={(e)=>{
                     e.preventDefault();
                     promptReserve(getPrompts(prompts, quantity));
-                    setActive(false);
+                    if(typeof setActiveTab === 'function') setActiveTab('card');
+                    if(typeof window !== 'undefined' && typeof window.scrollTo === 'function'){
+                        window.scrollTo({top:0, behavior:'smooth'});
+                    }
                 }}>
                     <div>Number of Prompts</div>
                     <input type="text" inputMode="numeric"   value={quantity} required onChange={(e) => {
@@ -64,7 +62,7 @@ function getPrompts(prompts, quantity){
     return result;
 }
 
-function ListPrompts({prompts,promptReserve, setActive}){
+function ListPrompts({prompts,promptReserve, setActiveTab}){
     const [display,setDisplay] = useState(false);
     //use i:i, bool
 
@@ -82,7 +80,10 @@ function ListPrompts({prompts,promptReserve, setActive}){
                     <div className="submit" onClick={()=>{
                         const stored = prompts.filter((n,i)=>selected[i]);
                         promptReserve(stored);
-                        setActive(false);
+                        if(typeof setActiveTab === 'function') setActiveTab('card');
+                        if(typeof window !== 'undefined' && typeof window.scrollTo === 'function'){
+                            window.scrollTo({top:0, behavior:'smooth'});
+                        }
                     }}>Confirm Selection</div>
                 </div>}
             </div>
