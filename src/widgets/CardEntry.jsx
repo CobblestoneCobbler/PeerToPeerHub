@@ -32,13 +32,13 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
 
                     {/*TODO Submit attempt on loose focus? */}
                     <input ref={firstNameRef} type="text" id="giverFirstName" placeholder="Your First Name" value={giverFirstName} onChange={(e)=>{
-                        setGiverFirstName(e.target.value);
+                        setGiverFirstName(capitalizeFirstLetter(e.target.value));
                     }}/>
                     <input type="text" id="giverLastName" placeholder="Your Last Name" value={giverLastName} onChange={(e)=>{
-                        setGiverLastName(e.target.value);
+                        setGiverLastName(capitalizeFirstLetter(e.target.value));
                     }}/>
                     <input type="text" id="managerName" placeholder="Manager Full Name" value={manager} onChange={(e)=>{
-                        setManagerName(e.target.value);
+                        setManagerName(capitalizeFirstLetter(e.target.value));
                     }}/>
                     <div className="submit" onClick={()=>{
                         if(giverFirstName==="" || giverLastName === ""){
@@ -135,18 +135,10 @@ function operatorRow(row, index, changeRows, promptCount){
     )
 }
 
-function setPrompt(rows, i, state){
-    for(let row of rows){
-        row[i] = state;
+function capitalizeFirstLetter(string) {
+    let words = string.split(" ");
+    for(let i = 0; i < words.length; i++){
+        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
     }
-    return rows;
-}
-
-function setGroup(rows, group, i, state){
-    for(let row of rows){
-        if(row[0].group === group){
-            row[i] = state;
-        }
-    }
-    return rows;
+    return words.join(" ");
 }
