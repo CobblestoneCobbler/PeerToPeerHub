@@ -1,5 +1,6 @@
 import "./css/DBEntry.css"
 import { useState } from "react";
+import { capitalizeFirstLetter } from "./helperFunctions";
 
 //TODO Maybe make this as an idea but let app do this, then call the appropriate. also change make operator to more localized (assuming local storage setting can be done outside of the parent app since the app itself doesnt need it till input)
 export function DBEntry({makeOperator, makePrompt}){
@@ -36,13 +37,13 @@ function OperatorEntry({makeOperator}){
                     <div>Enter an Operator</div>
                     <div className="input-set">
                         <input type="text" id="firstName" placeholder="First Name" value={firstName} onChange={(e)=>{
-                            setFirstName(e.target.value);
+                            setFirstName(capitalizeFirstLetter(e.target.value));
                         }} />
                         <input type="text" id="lastName" placeholder="Last Name" value={lastName} onChange={(e)=>{
-                                setLastName(e.target.value);
+                                setLastName(capitalizeFirstLetter(e.target.value));
                             }}/>
                         <input type="text" id="group" placeholder="Group" value={group} onChange={(e)=>{
-                                setGroup(e.target.value);
+                                setGroup(capitalizeFirstLetter(e.target.value));
                             }}/>
                     </div>
                     <input type="submit" />
@@ -104,7 +105,7 @@ function PromptEntry({makePrompt}){
                     }}>{category}</div>
                     {categoryActive && categoryList(changeCategory)}
                     <input type="text" placeholder="Nickname" id="nickname" value={nickname} onChange={(e)=>{
-                        setNickname(e.target.value);
+                        setNickname(capitalizeFirstLetter(e.target.value));
                     }}/>
                     <input type="text" placeholder="Description" id="description" value={description} onChange={(e)=>{
                         setDescription(e.target.value);

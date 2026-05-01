@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { capitalizeFirstLetter } from "./helperFunctions";
 
 export function CardEntry({setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
     const [submitted, setSubmitted] = useState(false);
@@ -133,12 +134,4 @@ function operatorRow(row, index, changeRows, promptCount){
             })}
         </div>
     )
-}
-
-function capitalizeFirstLetter(string) {
-    let words = string.split(" ");
-    for(let i = 0; i < words.length; i++){
-        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
-    }
-    return words.join(" ");
 }
