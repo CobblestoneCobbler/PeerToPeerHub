@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { capitalizeFirstLetter } from "./helperFunctions";
 
-export function CardEntry({setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
+export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
     const [submitted, setSubmitted] = useState(false);
     const [giverFirstName, setGiverFirstName] = useState("");
     const [giverLastName, setGiverLastName] = useState("");
@@ -92,14 +92,7 @@ export function CardEntry({setManager,setGiver,rows, prompts, changeRows, record
                     )
                 })}
 
-                {submitted? "":<div className="submit" onClick={()=>{
-                    if(!giver){
-                        alert("You must provide a name");
-                        return;
-                    }
-                    recordPrompts();
-                    setSubmitted(true);
-                }}>Submit Counts</div>}
+                {submitted? "":<div className="submit" onClick={() =>{ submit();   setSubmitted(true);}}>Submit</div>}
             </div>
         </>
     );

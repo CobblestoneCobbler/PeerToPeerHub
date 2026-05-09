@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { DBEntry } from './widgets/DBEntry';
 import { DBViewer } from './widgets/DBViewer';
 import { PromptGiver } from './widgets/PromptGiver';
 import { CardEntry } from './widgets/CardEntry';
-import { DataPresentWrapper } from './widgets/DataPresentWrapper';
+import { buildApiData, DataPresentWrapper, postData } from './widgets/DataPresentWrapper';
 
 
 
@@ -24,6 +24,10 @@ function App() {
     { id: 'promptsTab', label: 'Prompt Giver' },
     { id: 'card', label: 'Card Entry' }
     ];
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const apiKey = urlParams.get("k") || localStorage.getItem("apiKey");
+  apiKey ? localStorage.setItem("apiKey", apiKey) : null;
 
   let reservedPrompts = JSON.parse(localStorage.getItem("reserved"));
   if(reservedPrompts === null){
@@ -176,6 +180,23 @@ function App() {
   function setManager(name){
     setManagersName(name);
   }
+  function onSubmit(){
+  if(!reservedPrompts || reservedPrompts.length === 0){
+    alert("Please select prompts before submitting.");
+    return;
+  }
+  if(managersName.length === 0 || giverName.length === 0 || giverName[0].length === 0 || giverName[1].length === 0){
+    alert("Please enter your name, and manager's name before submitting.");
+    return;
+  }
+  if(!rows.find(row => row.find(r => r === true))){
+    alert("Please fill out at least one prompt before submitting.");
+    return;
+  }
+  alert("Please be sure to inform your peers, so that they are recognized");
+  recordPrompts();
+  postData(buildApiData({ managerName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }));
+}
 
   function renderActiveSection(){
     switch(activeTab){
@@ -194,11 +215,13 @@ function App() {
             </div>
           );
         }
-        return <CardEntry setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} />;
+        return <CardEntry submit={onSubmit} setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} />;
       default:
         return null;
     }
   }
+
+  
 
   /*Starting prompt:
   *   Receive P2P prompts
@@ -259,5 +282,7 @@ function App() {
     </>
   )
 }
+
+
 
 export default App

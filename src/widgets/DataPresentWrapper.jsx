@@ -124,3 +124,73 @@ function convertToFancy(answer){
             alert(`Converting to Fancy doesn't know what to do with ${answer}`);
     }
 }
+
+export function buildApiData({rows, prompts, firstName, lastName, managersName}){
+    const result = {
+        //just bools for matrix
+        matrix: [],
+        names: [],
+        //prompts {prompt: {level, rating, category, description}}
+        prompts: [],
+        giverName: {
+            firstName: firstName,
+            lastName: lastName
+        },
+        managersName: managersName
+    };
+    for(let prompt of prompts){
+        result.prompts.push({
+            level: prompt.level,
+            rating: prompt.rating,
+            category: prompt.category,
+            description: prompt.description
+        });
+    }
+    for(let row of rows){
+        let operator = row[0];
+        let isUsed = false;
+        let i = 1;
+        for(let prompt of prompts){
+            if(row[i]){
+                isUsed = true;
+            }
+            i++;
+        }
+        if(isUsed){
+            result.names.push({
+                firstName: operator.firstName,
+                lastName: operator.lastName
+            });
+            result.matrix.push(row.slice(1));
+        }
+    }
+    console.log(result);
+    return result;
+}
+
+export async function postData(data){
+    try {
+        const apiKey = localStorage.getItem("apiKey");
+        if(!apiKey){
+            alert("API key not found. Please scan the QR code to get access.");
+            throw new Error("API key not found. Please scan the QR code to get access.");
+        }
+        const res = await fetch("https://terryhq.org/api/submit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": apiKey
+            },
+            body: JSON.stringify(data)
+    });
+
+    if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+    }
+
+    return await res.json();
+    } catch (err) {
+        console.error("Submit failed:", err);
+        return { error: true, message: err.message };
+    }
+}
