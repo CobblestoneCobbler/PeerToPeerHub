@@ -53,7 +53,8 @@ form .input-set {
 }
 
 /* tmTarget (header showing counts) */
-.tmTarget{
+.tmTarget,
+.api-target{
     width: min(82vw, 980px);
     margin: 16px auto;
     padding: 14px 20px;
@@ -64,8 +65,14 @@ form .input-set {
     box-shadow: 0 8px 30px rgba(2,6,10,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
     color: var(--text);
 }
+.tmTarget{
+    display: none;
+}
 
-.tmTarget.locked{ color: var(--accent-c); }
+.tmTarget.locked{ 
+    display: block;
+    color: var(--accent-c);
+ }
 
 .tmTarget.locked.submitting{ color: var(--accent-a); }
 

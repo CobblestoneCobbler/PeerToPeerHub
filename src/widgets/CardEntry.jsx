@@ -92,7 +92,7 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     )
                 })}
 
-                {submitted? "":<div className="submit" onClick={() =>{ submit();   setSubmitted(true);}}>Submit</div>}
+                {submitted? "":<div className="submit" onClick={() =>{ submit()? setSubmitted(true):null;}}>Submit</div>}
             </div>
         </>
     );

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import './App.css';
 import { DBEntry } from './widgets/DBEntry';
 import { DBViewer } from './widgets/DBViewer';
 import { PromptGiver } from './widgets/PromptGiver';
 import { CardEntry } from './widgets/CardEntry';
-import { buildApiData, DataPresentWrapper, postData } from './widgets/DataPresentWrapper';
-
+import { DataPresentWrapper } from './widgets/DataPresentWrapper';
+import { buildApiData, postData, getStatus, getStats } from './apiCalls';
 
 
 
@@ -15,6 +15,7 @@ function App() {
   const [isReserved, setIsReserved] = useState(false);
   const [giverName, setGiverName] = useState(["",""]);
   const [managersName, setManagersName] = useState("");
+  const [uuid, setUuid] = useState(localStorage.getItem("uuid"));
 
   // Add tab state and tab definitions for top navigation
   const [activeTab, setActiveTab] = useState('promptsTab');
@@ -46,7 +47,8 @@ function App() {
     prompts = [];
     localStorage.setItem("prompts", JSON.stringify(prompts));
   }
-  
+
+
   const getPromptsSignature = (ps) => (ps || []).map(p=>p.nick).join('|');
   const loadSavedRows = () => {
     try{
@@ -159,7 +161,6 @@ function App() {
     }
     let i = 0;
     for(let prompt of reservedPrompts){
-      console.log(prompts);
       let target = prompts.find((p)=>{
         return p.nick === prompt.nick;
       });
@@ -181,22 +182,38 @@ function App() {
     setManagersName(name);
   }
   function onSubmit(){
-  if(!reservedPrompts || reservedPrompts.length === 0){
-    alert("Please select prompts before submitting.");
-    return;
+    if(!reservedPrompts || reservedPrompts.length === 0){
+      alert("Please select prompts before submitting.");
+      return false;
+    }
+    if(managersName.length === 0 || giverName.length === 0 || giverName[0].length === 0 || giverName[1].length === 0){
+      alert("Please enter your name, and manager's name before submitting.");
+      return false;
+    }
+    if(!rows.find(row => row.find(r => r === true))){
+      alert("Please fill out at least one prompt before submitting.");
+      return false;
+    }
+    alert("Please be sure to inform your peers, so that they are recognized");
+    recordPrompts();
+    submitData();
+    return true;
   }
-  if(managersName.length === 0 || giverName.length === 0 || giverName[0].length === 0 || giverName[1].length === 0){
-    alert("Please enter your name, and manager's name before submitting.");
-    return;
+  async function submitData(){
+    let response = await postData(buildApiData({ managersName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }));
+    console.log("Full response:", response);
+    console.log("response.batchId:", response?.batchId);
+    console.log("response.error:", response?.error);
+    if(response && response.batchId){
+      alert("Data submitted successfully! Reference ID: " + response.batchId);
+      localStorage.setItem("uuid", response.batchId);
+      setUuid(response.batchId);
+      //localStorage.removeItem("rows");
+      //setRows([[]]);
+    } else {
+      alert("Data submission failed. Please try again.");
+    }
   }
-  if(!rows.find(row => row.find(r => r === true))){
-    alert("Please fill out at least one prompt before submitting.");
-    return;
-  }
-  alert("Please be sure to inform your peers, so that they are recognized");
-  recordPrompts();
-  postData(buildApiData({ managerName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }));
-}
 
   function renderActiveSection(){
     switch(activeTab){
@@ -211,7 +228,7 @@ function App() {
           return (
             <div className={"no-reserve"}>
               <div className={"note"}>No prompts reserved. Please reserve prompts first.</div>
-              <button className={"go-to-prompts"} onClick={()=>setActiveTab('prompts')}>Go to Prompt Giver</button>
+              <button className={"go-to-prompts"} onClick={()=>setActiveTab('promptsTab')}>Go to Prompt Giver</button>
             </div>
           );
         }
@@ -221,43 +238,13 @@ function App() {
     }
   }
 
-  
 
-  /*Starting prompt:
-  *   Receive P2P prompts
-  *   Enter P2P
-  *   DB management
-  * 
-  * DB:
-  *   People
-  *   Prompts:
-  *     Prompt
-  *     Count of times used
-  *     Running count Cards Entered
-  *       (Average Cards/use)
-  *     Last Date used
-  *
-  * Receive P2P prompts:
-  *    Count of prompts{?}
-  *    Desired Card Total{?}
-  *       filter  :{
-  *             Last used date > 1mo ago ? Good : Warn (these should not be prioritized unless needed to satisfy count)
-  *
-  *         }
-  *       Grab biggest Yields until desired card total is met, then grab others at "random", from the lower half of prompts based on average cards/use
-  *   VVV
-  *   Present prompts and locally save (fault tolerant) for quick entry (Clear by Day Difference)
-  *   
-  * Enter P2P:
-  *   Select prompt (or quick button to jump to adding in db management)
-  *   Select from a list of people:
-  *     select all, select none
-  */
   return (
     <>
       <div className={`app-shell ${activeTab}`}>
+        {uuid && <StatusBar uuid={uuid} />}
         <div className='tmTarget'>TM Data{totalCount > 0? ` Total Cards to be Submitted: ${totalCount}`:""}</div>
-
+        <div className="api-target" onClick={() => postData(buildApiData({ managersName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }))}>API Data Test Button</div>
         {/* Top tab bar */}
         <nav className="tab-bar">
           {tabs.map(t=> (
@@ -286,3 +273,36 @@ function App() {
 
 
 export default App
+
+function StatusBar({uuid}){
+  const [status, setStatus] = useState(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    async function updateStatus() {
+      let response = await getStatus(uuid);
+      let current = response?.status || response;
+      setStatus(current);
+
+      while(isMountedRef.current && !(current === "completed" || current === 'completed with failures' )){
+        await new Promise(res => setTimeout(res, 3000));
+        response = await getStatus(uuid);
+        current = response?.status || response;
+        setStatus(current);
+      }
+    }
+
+    updateStatus();
+
+    return () => { isMountedRef.current = false; };
+  }, [uuid]);
+
+  return (
+    <div className={`statusBar ${status}`}>
+      <div className="innerStatusBar">
+        <div>Submission Status</div>
+        <div className="status">{status}</div>
+      </div>
+    </div>
+  )
+}
