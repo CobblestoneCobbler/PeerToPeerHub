@@ -4,6 +4,7 @@
 .card{ --accent-color: 40, 255, 198; --accent-color-inactive: 100, 180, 140; }
 .tmTarget, .api-target { --accent-color: 122, 75, 255; --accent-color-inactive: 92, 70, 160; }
 .statusBar {--accent-color: 11, 99, 255; --accent-color-inactive: 60, 80, 160; }
+.tutorial-modal {--accent-color: 168, 184, 200; --accent-color-inactive: 120, 130, 140; }
 
 .content-area{
     width:min(82vw,980px);
@@ -14,7 +15,8 @@
 .content-area >*,
 .tmTarget,
 .api-target,
-.statusBar {
+.statusBar,
+.tutorial-modal {
     width: min(82vw, 980px);
     margin:auto;
     margin-top: 20px;
@@ -30,7 +32,9 @@
     border-left:6px solid rgb(var(--accent-color));
     box-shadow: 0px 9px 60px rgba(var(--accent-color),0.5), inset 0 2px 10px rgba(var(--accent-color),0.02);
 }
-
+.tutorial-modal{
+    text-align: center;
+}
 .statusBar.queued >* {
     background: linear-gradient(rgba(80, 10, 110, 0.8), rgba(80, 10, 110, 0.2), rgba(80, 10, 110, 0.8));
 }
@@ -49,6 +53,8 @@
     position: relative;
     z-index: 3;
 }
+
+
 
 .tmTarget{
     color: var(--text);
@@ -96,17 +102,26 @@
     border-right: 8px solid rgba(11,98,255,0.7);
     box-shadow: 0 10px 28px rgba(8,20,60,0.55), 0 0 18px rgba(11,98,255,0.06);
 }
-.promptList .list .submit {
+.submit,
+.okay,
+.list-prompts {
     background-color: rgba(11,98,255,0.9) ;
     margin-top: 12px;
     padding: 8px 14px;
     text-align: center;
     border-radius: 12px;
 }
-.promptList .list .submit:hover{
+.list-prompts{ background-color: rgba(138,43,255,0.9);}
+.submit:hover,
+.okay:hover {
     background-color: rgba(8,20,60,0.55);
     border: 1px solid rgba(11,98,255,0.9);
 }
+.list-prompts:hover {
+    background-color: rgba(40,20,60,0.55);
+    border: 1px solid rgba(138,43,255,0.9);
+}
+
 
 .title-row{
     min-width: 40%;
@@ -116,7 +131,7 @@
     width: 100%;
     box-sizing: border-box;
     position: sticky;
-    top: 0;
+    top: 40px;
     background: #000;
     padding: 8px 12px;
     z-index: 5;
@@ -183,7 +198,7 @@
 
 /* Tab bar styles */
 .tab-bar{ 
-    margin-top: 10px;
+    margin-top: 20px;
     min-width: 82vw;
     display:flex;
     gap:8px;

@@ -4,21 +4,21 @@ import { DBEntry } from './widgets/DBEntry';
 import { DBViewer } from './widgets/DBViewer';
 import { PromptGiver } from './widgets/PromptGiver';
 import { CardEntry } from './widgets/CardEntry';
-import { DataPresentWrapper } from './widgets/DataPresentWrapper';
 import { buildApiData, postData, getStatus, getStats } from './apiCalls';
-
+import { DBEntryTutorial, PromptGiverTutorial, CardEntryTutorial, DBViewerTutorial } from './widgets/Tutorial';0
 
 
 function App() {
-  const [totalCount, setTotalCount] = useState(0);
   const [rows,setRows] = useState([[]]);
   const [isReserved, setIsReserved] = useState(false);
   const [giverName, setGiverName] = useState(["",""]);
   const [managersName, setManagersName] = useState("");
   const [uuid, setUuid] = useState(localStorage.getItem("uuid"));
-
+  const [waitTime, setWaitTime] = useState(0);
+  const [tutorialsSeen, setTutorialsSeen] = useState(JSON.parse(localStorage.getItem("tutorialsSeen")) || [0,0,0,0]);
+  
   // Add tab state and tab definitions for top navigation
-  const [activeTab, setActiveTab] = useState('promptsTab');
+  const [activeTab, setActiveTab] = useState(('promptsTab'));
   const tabs = [
     { id: 'viewer', label: 'DB Viewer' },
     { id: 'entry', label: 'DB Entry' },
@@ -29,6 +29,21 @@ function App() {
   const urlParams = new URLSearchParams(window.location.search);
   const apiKey = urlParams.get("k") || localStorage.getItem("apiKey");
   apiKey ? localStorage.setItem("apiKey", apiKey) : null;
+
+  function closeTutorial(index){
+    const updated = [...tutorialsSeen];
+    updated[index] = 1;
+    localStorage.setItem("tutorialsSeen", JSON.stringify(updated));
+    setTutorialsSeen(updated);
+  }
+
+  function resetTutorial(index){
+    const updated = [...tutorialsSeen];
+    updated[index] = 0;
+    localStorage.setItem("tutorialsSeen", JSON.stringify(updated));
+    setTutorialsSeen(updated);
+  }
+
 
   let reservedPrompts = JSON.parse(localStorage.getItem("reserved"));
   if(reservedPrompts === null){
@@ -47,6 +62,15 @@ function App() {
     prompts = [];
     localStorage.setItem("prompts", JSON.stringify(prompts));
   }
+
+  useEffect(() => {
+    if(reservedPrompts && reservedPrompts.length > 0){
+      promptReserve(reservedPrompts);
+    }
+    if((activeTab === 'promptsTab' || activeTab === "card" ) && (!prompts.length > 0 || !operators.length > 0)){
+      setActiveTab("entry");
+    }
+  }, []);
 
 
   const getPromptsSignature = (ps) => (ps || []).map(p=>p.nick).join('|');
@@ -172,7 +196,6 @@ function App() {
       i++;
     }
     localStorage.setItem("prompts", JSON.stringify(prompts));
-    setTotalCount(counts.reduce((n, acc) => acc + n));
   }
 
   function setGiver(firstName, lastName){
@@ -182,6 +205,13 @@ function App() {
     setManagersName(name);
   }
   function onSubmit(){
+
+    if(waitTime && Date.now() < waitTime){
+      const secs = Math.ceil((waitTime - Date.now()) / 1000);
+      alert(`Please wait ${secs} second${secs !== 1 ? 's' : ''} before submitting again.`);
+      return false;
+    }
+
     if(!reservedPrompts || reservedPrompts.length === 0){
       alert("Please select prompts before submitting.");
       return false;
@@ -200,6 +230,14 @@ function App() {
     return true;
   }
   async function submitData(){
+    if(waitTime && Date.now() < waitTime){
+      console.log('Submission blocked by cooldown.');
+      return;
+    }
+
+    setWaitTime(Date.now() + 2 * 6000);
+
+
     let response = await postData(buildApiData({ managersName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }));
     console.log("Full response:", response);
     console.log("response.batchId:", response?.batchId);
@@ -208,12 +246,32 @@ function App() {
       alert("Data submitted successfully! Reference ID: " + response.batchId);
       localStorage.setItem("uuid", response.batchId);
       setUuid(response.batchId);
-      //localStorage.removeItem("rows");
-      //setRows([[]]);
+      localStorage.removeItem("rows");
+      setRows([[]]);
+      reservedPrompts = [];
+      localStorage.setItem("reserved", JSON.stringify(reservedPrompts));
+      setIsReserved(false);
     } else {
       alert("Data submission failed. Please try again.");
     }
   }
+  const tutorialComponents = {
+    'viewer': DBViewerTutorial,
+    'entry': DBEntryTutorial,
+    'promptsTab': PromptGiverTutorial,
+    'card': CardEntryTutorial
+  };
+
+  function renderTutorial(){
+    const tabIndex = tabIndexMap[activeTab];
+    const TutorialComponent = tutorialComponents[activeTab];
+    
+    if(TutorialComponent && !tutorialsSeen[tabIndex]){
+      return <TutorialComponent onClose={() => closeTutorial(tabIndex)}/>;
+    }
+    return null;
+  }
+
 
   function renderActiveSection(){
     switch(activeTab){
@@ -222,6 +280,14 @@ function App() {
       case 'entry':
         return <DBEntry makeOperator={makeOperator} makePrompt={makePrompt}/>;
       case 'promptsTab':
+        if(!prompts || prompts.length === 0){
+          return (
+            <div className={"no-prompts"}>
+              <div className={"note"}>No prompts available. Please add prompts first.</div>
+              <button className={"go-to-entry"} onClick={()=>setActiveTab('entry')}>Go to DB Entry</button>
+            </div>
+          );
+        }
         return <PromptGiver prompts={prompts} promptReserve={promptReserve} setActiveTab={setActiveTab}/>;
       case 'card':
         if(!isReserved){
@@ -239,13 +305,14 @@ function App() {
   }
 
 
+  const tabIndexMap = { 'viewer': 0, 'entry': 1, 'promptsTab': 2, 'card': 3 };
+
   return (
     <>
       <div className={`app-shell ${activeTab}`}>
+        <NavBar tutorialReset={() => resetTutorial(tabIndexMap[activeTab])}/>
         {uuid && <StatusBar uuid={uuid} />}
-        <div className='tmTarget'>TM Data{totalCount > 0? ` Total Cards to be Submitted: ${totalCount}`:""}</div>
-        <div className="api-target" onClick={() => postData(buildApiData({ managersName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }))}>API Data Test Button</div>
-        {/* Top tab bar */}
+        {renderTutorial()}
         <nav className="tab-bar">
           {tabs.map(t=> (
             <button
@@ -261,10 +328,6 @@ function App() {
         <main className={`content-area ${activeTab}`}>
           {renderActiveSection()}
         </main>
-
-        <div className={"data-present-wrapper"}>
-          <DataPresentWrapper managerName={managersName} giverName={giverName} rows={rows} prompts={reservedPrompts} />
-        </div>
       </div>
     </>
   )
@@ -276,6 +339,8 @@ export default App
 
 function StatusBar({uuid}){
   const [status, setStatus] = useState(null);
+  const [totalCards, setTotalCards] = useState(0);
+  const [failedCards, setFailedCards] = useState(0);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -283,12 +348,17 @@ function StatusBar({uuid}){
       let response = await getStatus(uuid);
       let current = response?.status || response;
       setStatus(current);
+      setTotalCards(response?.totalCards || 0);
+      setTotalJobs(response?.totalJobs || 0);
+      setFailedCards(response?.failedCards || 0);
 
       while(isMountedRef.current && !(current === "completed" || current === 'completed with failures' )){
-        await new Promise(res => setTimeout(res, 3000));
+        await new Promise(res => setTimeout(res, 30000));
         response = await getStatus(uuid);
         current = response?.status || response;
         setStatus(current);
+        setTotalCards(response?.totalCards || 0);
+        setFailedCards(response?.failedCards || 0);
       }
     }
 
@@ -302,7 +372,23 @@ function StatusBar({uuid}){
       <div className="innerStatusBar">
         <div>Submission Status</div>
         <div className="status">{status}</div>
+        <div className="stats">
+          <div>Total Cards: {totalCards}</div>
+          {failedCards !== 0 && <div className="failed-cards">Failed Cards: {failedCards}</div>}
+        </div>
       </div>
+    </div>
+  )
+}
+
+function NavBar({tutorialReset}){
+  return(
+    <div className="navBar">
+      <div className="home" onClick={() => window.location.href = "/"}>Home</div>
+      <div className="contact-me" onClick={() =>{
+        window.location.href = `mailto:johnathan.p.terry@outlook.com?subject=Contact%20about%20Terry%20HQ&body=I'm reaching out to you about`;
+      }}>Get in touch</div>
+      <div className="tutorial" onClick={() => tutorialReset()}>Help ⓘ</div>
     </div>
   )
 }

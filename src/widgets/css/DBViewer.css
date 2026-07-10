@@ -1,8 +1,8 @@
 .wrapper{
     display: flex;
     flex-direction: column;
+    padding: 15px;
     gap: 20px;
-    /* prevent any horizontal overflow that looks like a negative right margin */
     overflow-x: hidden;
 }
 
@@ -13,7 +13,6 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    /* ensure no accidental right-side negative margin or padding */
     margin-right: 0;
     padding-right: 0;
 }
@@ -32,9 +31,7 @@
     border-radius: 12px;
     box-shadow: 0 12px 30px rgba(2,6,10,0.55);
     transition: transform 180ms ease, box-shadow 220ms ease, border-color 220ms ease;
-    /* neon outline (subtle) */
     border-image: linear-gradient(90deg, rgba(0,240,255,0.12), rgba(122,75,255,0.09)) 1;
-    /* prevent the card itself from affecting horizontal layout via outline/shadow */
     box-sizing: border-box;
 }
 
@@ -65,7 +62,6 @@
     box-shadow: 0 20px 48px rgba(8,12,18,0.72), 0 0 36px rgba(122,75,255,0.08), 0 0 44px rgba(40,255,198,0.06);
 }
 
-/* subtle accent strip at bottom of prompt cards */
 .promptCard::after{
     content: "";
     display: block;
@@ -87,7 +83,6 @@
     justify-content: space-around;
 }
 
-/* delete / warning button styles for operator cards */
 .opCard button{
     padding: 8px 12px;
     border-radius: 8px;
@@ -136,22 +131,3 @@
     border: 1px solid rgba(255,255,255,0.02);
 }
 
-/* make operator rows slightly separated with subtle neon left border */
-
-
-/* checkbox clickables look neon when active 
-.checkbox{
-    
-    display:flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background 120ms ease, box-shadow 120ms ease;
-}
-
-.checkbox:has(:not(:empty)){
-    background: linear-gradient(90deg, rgba(0,240,255,0.04), rgba(122,75,255,0.03));
-    box-shadow: 0 8px 20px rgba(0,240,255,0.04), 0 0 14px rgba(122,75,255,0.02);
-}
-    */

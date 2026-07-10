@@ -17,12 +17,13 @@ export function PromptGiver({prompts, promptReserve, setActiveTab}){
 function PromptDisplay({prompts,promptReserve, setActiveTab}){
     const [quantity, setQuantity] = useState(5);
     const [targetCount, setTargetCount] = useState(200);
+    const [formRef, setFormRef] = useState(null);
 
 
     return (
         <>
             <div>
-                <form onSubmit={(e)=>{
+                <form ref={setFormRef} onSubmit={(e)=>{
                     e.preventDefault();
                     promptReserve(getPrompts(prompts, quantity));
                     if(typeof setActiveTab === 'function') setActiveTab('card');
@@ -38,7 +39,7 @@ function PromptDisplay({prompts,promptReserve, setActiveTab}){
                     <input type="text" inputMode="numeric"  value={targetCount} required onChange={(e) => {
                         if(Number.isInteger(Number(e.target.value))) setTargetCount(e.target.value);
                     }}/>
-                    <input type="submit" />
+                    <div className="submit" onClick={()=>{formRef?.submit()}} >Submit</div>
                 </form>
             </div>
         </>
@@ -72,7 +73,7 @@ function ListPrompts({prompts,promptReserve, setActiveTab}){
     return(
         <>
             <div className="promptList">
-                <div className="title" onClick={()=>setDisplay(display? false:true)}>List Prompts</div>
+                <div className="title list-prompts" onClick={()=>setDisplay(display? false:true)}>List Prompts</div>
                 {display && <div className="list">
                     {getPrompts(prompts, prompts.length).map((n,i)=>(
                         <div key={i} className={`prompt ${selected[i]? "active": "" }`} id={`prompt${i}`} onClick={()=>{setSelected(prev => toggle(prev, i))}}>{n.nick}</div>

@@ -1,16 +1,5 @@
-export function DataPresentWrapper({managersName, giverName,rows, prompts}){
-    //TODO add user first and Last name
-    const firstName = giverName[0];
-    const lastName = giverName[1];
-    localStorage.setItem("output", JSON.stringify(generateData(rows, prompts, firstName, lastName, managersName)));
-
-    return(
-        <>
-            <div>
-                <div>Data all wrapped up. Run TM now.</div>
-            </div>
-        </>
-    )
+export function DataPresentWrapper({managersName, giverName, rows, prompts}){
+    return null;
 }
 //TODO post request
 

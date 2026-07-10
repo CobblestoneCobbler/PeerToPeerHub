@@ -36,10 +36,10 @@ function OperatorEntry({makeOperator}){
                 }}>
                     <div>Enter an Operator</div>
                     <div className="input-set">
-                        <input type="text" id="firstName" placeholder="First Name" value={firstName} onChange={(e)=>{
+                        <input type="text" id="firstName" placeholder="First Name" value={firstName} autoComplete="off" onChange={(e)=>{
                             setFirstName(capitalizeFirstLetter(e.target.value));
                         }} />
-                        <input type="text" id="lastName" placeholder="Last Name" value={lastName} onChange={(e)=>{
+                        <input type="text" id="lastName" placeholder="Last Name" value={lastName} autoComplete="off" onChange={(e)=>{
                                 setLastName(capitalizeFirstLetter(e.target.value));
                             }}/>
                         <input type="text" id="group" placeholder="Group" value={group} onChange={(e)=>{
@@ -104,10 +104,10 @@ function PromptEntry({makePrompt}){
                         setCategoryActive(categoryActive?false:true);
                     }}>{category}</div>
                     {categoryActive && categoryList(changeCategory)}
-                    <input type="text" placeholder="Nickname" id="nickname" value={nickname} onChange={(e)=>{
+                    <input type="text" placeholder="Nickname" id="nickname" value={nickname} autoComplete="off" onChange={(e)=>{
                         setNickname(capitalizeFirstLetter(e.target.value));
                     }}/>
-                    <input type="text" placeholder="Description" id="description" value={description} onChange={(e)=>{
+                    <input type="text" placeholder="Description" id="description" value={description} autoComplete="off" onChange={(e)=>{
                         setDescription(e.target.value);
                     }}/>
                     <input type="submit" />

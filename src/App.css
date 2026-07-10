@@ -17,6 +17,31 @@ a {
     background-color: transparent;
     color: var(--text);
 }
+.app-shell{
+    position: relative;
+    width: 100vw;
+    min-height: 100vh;
+}
+
+.navBar{
+    position: sticky;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 40px; /* restored original height */
+    padding: 7px; /* restored original padding */
+    display: flex;
+    justify-content: space-evenly; /* restore original spacing */
+    align-items: center;
+    z-index: 40;
+    background-color: rgba(25,25,25,1);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+}
+
+.navBar div {
+    padding: 5px 12px;
+}
+
 
 body{
     background-color: var(--bg);

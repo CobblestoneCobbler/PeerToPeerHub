@@ -32,10 +32,10 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                 {!giver && <div className="GiverEntry">
 
                     {/*TODO Submit attempt on loose focus? */}
-                    <input ref={firstNameRef} type="text" id="giverFirstName" placeholder="Your First Name" value={giverFirstName} onChange={(e)=>{
+                    <input ref={firstNameRef} type="text" id="giverFirstName" placeholder="Your First Name" autoComplete="off" value={giverFirstName} onChange={(e)=>{
                         setGiverFirstName(capitalizeFirstLetter(e.target.value));
                     }}/>
-                    <input type="text" id="giverLastName" placeholder="Your Last Name" value={giverLastName} onChange={(e)=>{
+                    <input type="text" id="giverLastName" placeholder="Your Last Name" autoComplete="off" value={giverLastName} onChange={(e)=>{
                         setGiverLastName(capitalizeFirstLetter(e.target.value));
                     }}/>
                     <input type="text" id="managerName" placeholder="Manager Full Name" value={manager} onChange={(e)=>{
