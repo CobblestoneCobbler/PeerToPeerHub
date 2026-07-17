@@ -1,6 +1,4 @@
 import { useState } from "react";
-import "./css/DBEntry.css";
-import "./css/DBViewer.css";
 
 export function DBViewer({operators, prompts, removeOperator}){
     return (

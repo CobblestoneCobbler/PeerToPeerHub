@@ -1,14 +1,40 @@
-import { useEffect, useState, useRef } from 'react';
-import './App.css';
+import { useEffect, useState, useRef, useCallback, createContext, useContext } from 'react';
 import { DBEntry } from './widgets/DBEntry';
 import { DBViewer } from './widgets/DBViewer';
 import { PromptGiver } from './widgets/PromptGiver';
 import { CardEntry } from './widgets/CardEntry';
-import { buildApiData, postData, getStatus, getStats } from './apiCalls';
-import { DBEntryTutorial, PromptGiverTutorial, CardEntryTutorial, DBViewerTutorial } from './widgets/Tutorial';0
+import { buildApiData, postData, getStatus } from './apiCalls';
+import { DBEntryTutorial, PromptGiverTutorial, CardEntryTutorial, DBViewerTutorial } from './widgets/Tutorial';
 
+const ToastContext = createContext();
+export function useToast() { return useContext(ToastContext); }
 
-function App() {
+let toastId = 0;
+
+function ToastContainer() {
+  const [toasts, setToasts] = useState([]);
+  const addToast = useCallback((message, type = 'info', duration = 4000) => {
+    const id = ++toastId;
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.map(t => t.id === id ? { ...t, leaving: true } : t));
+      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 300);
+    }, duration);
+  }, []);
+  return (
+    <ToastContext.Provider value={addToast}>
+      <div className="toast-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`toast toast-${t.type}${t.leaving ? ' leaving' : ''}`}>{t.message}</div>
+        ))}
+      </div>
+      <AppInner />
+    </ToastContext.Provider>
+  );
+}
+
+function AppInner() {
+  const addToast = useToast();
   const [rows,setRows] = useState([[]]);
   const [isReserved, setIsReserved] = useState(false);
   const [giverName, setGiverName] = useState(["",""]);
@@ -92,7 +118,7 @@ function App() {
       }
       return false;
     }) != null){
-      alert(`${firstName} ${lastName}, is already an operator.`);
+      addToast(`${firstName} ${lastName} is already an operator.`, 'error');
       return;
     }
 
@@ -110,7 +136,7 @@ function App() {
 
   function makePrompt(description,level,rating,category,nick){
     if(prompts.find(n => n.nick === nick)){
-      alert("Nick already in use.");
+      addToast("Nickname already in use.", 'error');
       return;
     }
     prompts.push({nick:nick,level:level,rating:rating,category:category,description:description,timesUsed:0,totalCards:0,lastUsed:{year:0,month:0,day:0}});
@@ -208,23 +234,23 @@ function App() {
 
     if(waitTime && Date.now() < waitTime){
       const secs = Math.ceil((waitTime - Date.now()) / 1000);
-      alert(`Please wait ${secs} second${secs !== 1 ? 's' : ''} before submitting again.`);
+      addToast(`Please wait ${secs} second${secs !== 1 ? 's' : ''} before submitting again.`, 'error');
       return false;
     }
 
     if(!reservedPrompts || reservedPrompts.length === 0){
-      alert("Please select prompts before submitting.");
+      addToast("Please select prompts before submitting.", 'error');
       return false;
     }
     if(managersName.length === 0 || giverName.length === 0 || giverName[0].length === 0 || giverName[1].length === 0){
-      alert("Please enter your name, and manager's name before submitting.");
+      addToast("Please enter your name and manager's name before submitting.", 'error');
       return false;
     }
     if(!rows.find(row => row.find(r => r === true))){
-      alert("Please fill out at least one prompt before submitting.");
+      addToast("Please fill out at least one prompt before submitting.", 'error');
       return false;
     }
-    alert("Please be sure to inform your peers, so that they are recognized");
+    addToast("Please be sure to inform your peers so that they are recognized.", 'info');
     recordPrompts();
     submitData();
     return true;
@@ -239,11 +265,8 @@ function App() {
 
 
     let response = await postData(buildApiData({ managersName: managersName, giverName: giverName, rows: rows, prompts: reservedPrompts }));
-    console.log("Full response:", response);
-    console.log("response.batchId:", response?.batchId);
-    console.log("response.error:", response?.error);
     if(response && response.batchId){
-      alert("Data submitted successfully! Reference ID: " + response.batchId);
+      addToast("Data submitted successfully! Reference ID: " + response.batchId, 'success', 8000);
       localStorage.setItem("uuid", response.batchId);
       setUuid(response.batchId);
       localStorage.removeItem("rows");
@@ -252,7 +275,7 @@ function App() {
       localStorage.setItem("reserved", JSON.stringify(reservedPrompts));
       setIsReserved(false);
     } else {
-      alert("Data submission failed. Please try again.");
+      addToast("Data submission failed. Please try again.", 'error');
     }
   }
   const tutorialComponents = {
@@ -335,11 +358,12 @@ function App() {
 
 
 
-export default App
+export default ToastContainer
 
 function StatusBar({uuid}){
   const [status, setStatus] = useState(null);
   const [totalCards, setTotalCards] = useState(0);
+  const [totalJobs, setTotalJobs] = useState(0);
   const [failedCards, setFailedCards] = useState(0);
   const isMountedRef = useRef(true);
 
@@ -384,11 +408,11 @@ function StatusBar({uuid}){
 function NavBar({tutorialReset}){
   return(
     <div className="navBar">
-      <div className="home" onClick={() => window.location.href = "/"}>Home</div>
+      <div className="home" onClick={() => window.location.href = "/"}>HOME</div>
       <div className="contact-me" onClick={() =>{
         window.location.href = `mailto:johnathan.p.terry@outlook.com?subject=Contact%20about%20Terry%20HQ&body=I'm reaching out to you about`;
-      }}>Get in touch</div>
-      <div className="tutorial" onClick={() => tutorialReset()}>Help ⓘ</div>
+      }}>CONTACT</div>
+      <div className="tutorial" onClick={() => tutorialReset()}>HELP</div>
     </div>
   )
 }

@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { capitalizeFirstLetter } from "./helperFunctions";
+import { useToast } from "../App";
 
 export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
+    const addToast = useToast();
     const [submitted, setSubmitted] = useState(false);
     const [giverFirstName, setGiverFirstName] = useState("");
     const [giverLastName, setGiverLastName] = useState("");
     const [manager, setManagerName] = useState("");
     const [giver,setGiverBool] = useState(false);
+    const [collapsed, setCollapsed] = useState({});
+    const [stuckGroups, setStuckGroups] = useState({});
     const firstNameRef = useRef(null);
 
     useEffect(()=>{
-        // focus the first name input when the giver form is visible
         if(!giver && firstNameRef.current){
             firstNameRef.current.focus();
         }
@@ -22,6 +25,28 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
         if(!groups[g]) groups[g] = [];
         groups[g].push({row: r, idx});
     });
+
+    const headerRefs = useRef({});
+    const groupNames = Object.keys(groups);
+
+    useEffect(()=>{
+        const observer = new IntersectionObserver((entries)=>{
+            entries.forEach(entry=>{
+                const key = entry.target.dataset.group;
+                if(!key) return;
+                if(!entry.isIntersecting && entry.boundingClientRect.top < 110){
+                    setStuckGroups(prev => ({...prev, [key]: true}));
+                } else {
+                    setStuckGroups(prev => ({...prev, [key]: false}));
+                }
+            });
+        }, { rootMargin: "-1px 0px 0px 0px", threshold: 0 });
+
+        const refs = headerRefs.current;
+        Object.values(refs).forEach(el => el && observer.observe(el));
+
+        return ()=>observer.disconnect();
+    }, [groupNames.join(',')]);
 
     const gridStyle = { gridTemplateColumns: `200px repeat(${prompts.length}, 1fr)` };
 
@@ -43,11 +68,11 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     }}/>
                     <div className="submit" onClick={()=>{
                         if(giverFirstName==="" || giverLastName === ""){
-                            alert("You must provide your name");
+                            addToast("You must provide your name.", 'error');
                             return;
                         }
                         if(manager === ""){
-                            alert("You must provide a manager name")
+                            addToast("You must provide a manager name.", 'error');
                             return;
                         }
                         setManager(manager);
@@ -66,33 +91,58 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     })}
                 </div>
 
-                <div className="switch-all" onClick={()=>{
-                    changeRows((x,y,r) => {
-                        return r?false:true;
-                    })
-                }}>Swap all</div>
-
                 {Object.keys(groups).map((groupName)=>{
                     const items = groups[groupName];
+                    const isCollapsed = collapsed[groupName];
                     return (
-                        <div className="group-block" key={`group-${groupName}`}>
-                            <div className="group-header" onClick={() => {
-                                changeRows((x,y,r) => {
-                                    if(rows[x] && rows[x][0] && rows[x][0].group === groupName){
-                                        return r?false:true;
+                        <div className={`group-block ${isCollapsed? "collapsed" : ""}`} key={`group-${groupName}`}>
+                            <div ref={el => headerRefs.current[groupName] = el} data-group={groupName} className={`group-header ${stuckGroups[groupName]? "stuck" : ""}`} style={gridStyle}>
+                                <div className="group-header-left">
+                                    <button className="collapse-btn" onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCollapsed(prev => ({...prev, [groupName]: !prev[groupName]}));
+                                    }}>{isCollapsed ? '▶' : '▼'}</button>
+                                    <span className="group-name" onClick={() => {
+                                        changeRows((x,y,r) => {
+                                            if(rows[x] && rows[x][0] && rows[x][0].group === groupName){
+                                                return r?false:true;
+                                            }
+                                            return r;
+                                        })
+                                    }}>{groupName}</span>
+                                </div>
+                                {prompts.map((_, pi) => {
+                                    const pi1 = pi + 1;
+                                    let hasTrue = false, hasFalse = false;
+                                    for (const {row} of items) {
+                                        if (row[pi1]) hasTrue = true;
+                                        else hasFalse = true;
+                                        if (hasTrue && hasFalse) break;
                                     }
-                                    return r;
-                                })
-                            }}>{groupName}</div>
+                                    const status = hasTrue && hasFalse ? 'mixed' : hasTrue ? 'all-true' : 'all-false';
+                                    return (
+                                        <div key={`gs-${pi1}`} className={`group-status ${status}`} onClick={() => {
+                                            changeRows((x,y,r) => {
+                                                if(rows[x] && rows[x][0] && rows[x][0].group === groupName && y === pi1){
+                                                    return hasTrue && !hasFalse ? false : true;
+                                                }
+                                                return r;
+                                            })
+                                        }}>
+                                            {status === 'all-true' ? <CheckIcon /> : status === 'mixed' ? <DashIcon /> : <CrossIcon />}
+                                        </div>
+                                    )
+                                })}
+                            </div>
 
-                            {items.map(({row, idx}) => (
+                            {!isCollapsed && items.map(({row, idx}) => (
                                 operatorRow(row, idx, changeRows, prompts.length)
                             ))}
                         </div>
                     )
                 })}
 
-                {submitted? "":<div className="submit" onClick={() =>{ submit()? setSubmitted(true):null;}}>Submit</div>}
+                {submitted? "":<div className="submit submit-sticky" onClick={() =>{ submit()? setSubmitted(true):null;}}>Submit</div>}
             </div>
         </>
     );
@@ -122,9 +172,34 @@ function operatorRow(row, index, changeRows, promptCount){
                             }
                             return rp;
                         })
-                    }}>{r?"✅":"❌"}</div>
+                    }}>{r ? <CheckIcon /> : <CrossIcon />}</div>
                 )
             })}
         </div>
     )
+}
+
+function CheckIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgb(var(--accent-color, 57, 255, 20))' }}>
+            <polyline points="20 6 9 17 4 12" />
+        </svg>
+    );
+}
+
+function DashIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: 'rgb(255, 200, 0)' }}>
+            <line x1="6" y1="12" x2="18" y2="12" />
+        </svg>
+    );
+}
+
+function CrossIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'rgba(255, 60, 60, 0.7)' }}>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+    );
 }

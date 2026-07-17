@@ -1,6 +1,6 @@
-import "./css/DBEntry.css"
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { capitalizeFirstLetter } from "./helperFunctions";
+import { useToast } from "../App";
 
 //TODO Maybe make this as an idea but let app do this, then call the appropriate. also change make operator to more localized (assuming local storage setting can be done outside of the parent app since the app itself doesnt need it till input)
 export function DBEntry({makeOperator, makePrompt}){
@@ -18,6 +18,7 @@ export function DBEntry({makeOperator, makePrompt}){
 
 //TODO OnSubmit
 function OperatorEntry({makeOperator}){
+    const addToast = useToast();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [group, setGroup] = useState("");
@@ -27,7 +28,7 @@ function OperatorEntry({makeOperator}){
                 <form onSubmit={(e) => {
                     e.preventDefault();
                     if(firstName === "" || lastName === ""){
-                        alert("Both names must be filled out.");
+                        addToast("Both names must be filled out.", 'error');
                         return;
                     }
                     makeOperator(firstName,lastName, group);
@@ -55,6 +56,7 @@ function OperatorEntry({makeOperator}){
 
 //TODO OnSubmit
 function PromptEntry({makePrompt}){
+    const addToast = useToast();
     const [nickname,setNickname] = useState("");
     const [description,setDescription] = useState("");
     const [riskLevel,setRiskLevel] = useState("Low");
@@ -82,9 +84,9 @@ function PromptEntry({makePrompt}){
                 <form onSubmit={(e)=>{
                     e.preventDefault();
                     if(description === "" || nickname === ""){
-                        alert("More fields required");
+                        addToast("Nickname and description are required.", 'error');
                         return;
-                    } 
+                    }
                     makePrompt(description,riskLevel,riskRating,category,nickname);
                     setNickname("");
                     setDescription("");
@@ -93,17 +95,17 @@ function PromptEntry({makePrompt}){
                     setCategory("Safety");
                 }}>
                     <div className="selector" id="riskLevel" onClick={()=>{
-                        setRiskLevelActive(riskLevelActive? false:true);
+                        setRiskLevelActive(prev => !prev);
                     }}>{riskLevel}</div>
-                    {riskLevelActive && riskLevelList(changeRiskLevel)}
+                    {riskLevelActive && riskLevelList(riskLevel, changeRiskLevel)}
                     <div className="selector" id="riskRating" onClick={()=>{
-                        setRiskRatingActive(riskLevelActive?false:true);
+                        setRiskRatingActive(prev => !prev);
                     }}>{riskRating}</div>
-                    {riskRatingActive && riskRatingList(changeRiskRating)}
+                    {riskRatingActive && riskRatingList(riskRating, changeRiskRating)}
                     <div className="selector" id="category" onClick={()=>{
-                        setCategoryActive(categoryActive?false:true);
+                        setCategoryActive(prev => !prev);
                     }}>{category}</div>
-                    {categoryActive && categoryList(changeCategory)}
+                    {categoryActive && categoryList(category, changeCategory)}
                     <input type="text" placeholder="Nickname" id="nickname" value={nickname} autoComplete="off" onChange={(e)=>{
                         setNickname(capitalizeFirstLetter(e.target.value));
                     }}/>
@@ -118,58 +120,34 @@ function PromptEntry({makePrompt}){
 }
 
 //TODO Pass in the raw state
-function riskLevelList(setRiskLevel){
+function riskLevelList(current, setRiskLevel){
     const levels = ["Low","Medium", "High"];
     return(
-        <>
-            <div className="riskLevelSelector selector">
-                {levels.map((n)=>{
-                    return(
-                        <>
-                        <div className={riskLevel===n? "active":""} onClick={()=>{
-                            setRiskLevel(n);
-                        }}>{n}</div>
-                        </>
-                    );
-                })}
-            </div>
-        </>
+        <div className="riskLevelSelector selector" key="riskLevelList">
+            {levels.map((n)=>(
+                <div className={current===n? "active":""} onClick={()=>{ setRiskLevel(n); }} key={n}>{n}</div>
+            ))}
+        </div>
     )
 }
 
-function riskRatingList(setRiskRating){
+function riskRatingList(current, setRiskRating){
     const levels = ["Condition", "Near Miss"];
     return(
-        <>
-            <div className="riskRatingSelector selector">
-                {levels.map((n)=>{
-                    return(
-                        <>
-                        <div className={riskLevel===n? "active":""} onClick={()=>{
-                            setRiskRating(n);
-                        }}>{n}</div>
-                        </>
-                    );
-                })}
-            </div>
-        </>
+        <div className="riskRatingSelector selector" key="riskRatingList">
+            {levels.map((n)=>(
+                <div className={current===n? "active":""} onClick={()=>{ setRiskRating(n); }} key={n}>{n}</div>
+            ))}
+        </div>
     )
 }
-function categoryList(setCategory){
+function categoryList(current, setCategory){
     const levels = ["Ergonomic", "Safety", "Biological","Physical","Chemical"];
     return(
-        <>
-            <div className="categorySelector selector">
-                {levels.map((n)=>{
-                    return(
-                        <>
-                        <div className={category===n? "active":""} onClick={()=>{
-                            setCategory(n);
-                        }}>{n}</div>
-                        </>
-                    );
-                })}
-            </div>
-        </>
+        <div className="categorySelector selector" key="categoryList">
+            {levels.map((n)=>(
+                <div className={current===n? "active":""} onClick={()=>{ setCategory(n); }} key={n}>{n}</div>
+            ))}
+        </div>
     )
 }

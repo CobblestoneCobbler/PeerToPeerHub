@@ -17,13 +17,12 @@ export function PromptGiver({prompts, promptReserve, setActiveTab}){
 function PromptDisplay({prompts,promptReserve, setActiveTab}){
     const [quantity, setQuantity] = useState(5);
     const [targetCount, setTargetCount] = useState(200);
-    const [formRef, setFormRef] = useState(null);
 
 
     return (
         <>
             <div>
-                <form ref={setFormRef} onSubmit={(e)=>{
+                <form onSubmit={(e)=>{
                     e.preventDefault();
                     promptReserve(getPrompts(prompts, quantity));
                     if(typeof setActiveTab === 'function') setActiveTab('card');
@@ -39,7 +38,7 @@ function PromptDisplay({prompts,promptReserve, setActiveTab}){
                     <input type="text" inputMode="numeric"  value={targetCount} required onChange={(e) => {
                         if(Number.isInteger(Number(e.target.value))) setTargetCount(e.target.value);
                     }}/>
-                    <div className="submit" onClick={()=>{formRef?.submit()}} >Submit</div>
+                    <button type="submit" className="submit">Submit</button>
                 </form>
             </div>
         </>
@@ -65,9 +64,7 @@ function getPrompts(prompts, quantity){
 
 function ListPrompts({prompts,promptReserve, setActiveTab}){
     const [display,setDisplay] = useState(false);
-    //use i:i, bool
-
-    const [selected, setSelected] = useState(prompts.map(()=>false));
+    const [selected, setSelected] = useState({});
 
 
     return(
@@ -76,10 +73,10 @@ function ListPrompts({prompts,promptReserve, setActiveTab}){
                 <div className="title list-prompts" onClick={()=>setDisplay(display? false:true)}>List Prompts</div>
                 {display && <div className="list">
                     {getPrompts(prompts, prompts.length).map((n,i)=>(
-                        <div key={i} className={`prompt ${selected[i]? "active": "" }`} id={`prompt${i}`} onClick={()=>{setSelected(prev => toggle(prev, i))}}>{n.nick}</div>
+                        <div key={n.nick} className={`prompt ${selected[n.nick]? "active": "" }`} onClick={()=>{setSelected(prev => ({...prev, [n.nick]: !prev[n.nick]}))}}>{n.nick}</div>
                     ))}
-                    <div className="submit" onClick={()=>{
-                        const stored = prompts.filter((n,i)=>selected[i]);
+                    <div className="submit submit-sticky" onClick={()=>{
+                        const stored = prompts.filter(n=>selected[n.nick]);
                         promptReserve(stored);
                         if(typeof setActiveTab === 'function') setActiveTab('card');
                         if(typeof window !== 'undefined' && typeof window.scrollTo === 'function'){
@@ -92,8 +89,3 @@ function ListPrompts({prompts,promptReserve, setActiveTab}){
     )
 }
 
-function toggle(array, i){
-    let output = [...array];
-    output[i] = !output[i];
-    return output;
-}

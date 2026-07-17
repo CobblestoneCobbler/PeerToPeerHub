@@ -1,0 +1,94 @@
+:root {
+  --bg: #07070d;
+  --surface: #0c0c1e;
+  --color: #c8d0ff;
+  --color-dim: #6060aa;
+  --primary-bg: #0a0a18;
+  --primary-bg-rgb: 10, 10, 24;
+  --fallback-bg: #111133;
+  --accent: #00f7ff;
+  --accent-rgb: 0, 247, 255;
+  --accent2: #9d00ff;
+  --accent2-rgb: 157, 0, 255;
+  --nav-bg: #07070d;
+  --border-color: rgba(0, 247, 255, 0.2);
+  --glow-cyan: 0 0 12px rgba(0, 247, 255, 0.3);
+  --glow-purple: 0 0 12px rgba(157, 0, 255, 0.3);
+
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'JetBrains Mono', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --cyber-black: var(--bg);
+  --cyber-dark: var(--primary-bg);
+  --cyber-surface: var(--surface);
+  --neon-cyan: var(--accent);
+  --neon-magenta: var(--accent2);
+  --neon-lime: #39ff14;
+  --neon-purple: #b300ff;
+  --neon-amber: #ffb300;
+  --text-primary: var(--color);
+  --text-dim: var(--color-dim);
+  --glass-border: rgba(255, 255, 255, 0.03);
+
+  --accent-a: var(--accent);
+  --accent-b: var(--accent2);
+  --accent-c: #39ff14;
+}
+
+[data-theme="light"] {
+  --bg: #f5f5ff;
+  --surface: #ffffff;
+  --color: #0a0a1a;
+  --color-dim: #4444aa;
+  --primary-bg: #eaeafa;
+  --primary-bg-rgb: 234, 234, 250;
+  --fallback-bg: #c8c8e8;
+  --accent: #0044ff;
+  --accent-rgb: 0, 68, 255;
+  --accent2: #9900ee;
+  --accent2-rgb: 153, 0, 238;
+  --nav-bg: #ffffff;
+  --border-color: rgba(0, 68, 255, 0.3);
+  --glow-cyan: 0 0 10px rgba(0, 68, 255, 0.3);
+  --glow-purple: 0 0 10px rgba(153, 0, 238, 0.3);
+
+  --cyber-black: var(--bg);
+  --cyber-dark: var(--primary-bg);
+  --cyber-surface: var(--surface);
+  --text-primary: var(--color);
+  --text-dim: var(--color-dim);
+  --glass-border: rgba(0, 68, 255, 0.08);
+}
+
+.viewer { --accent-color: 179, 0, 255; --accent-color-inactive: 100, 60, 160; }
+.entry { --accent-color: 0, 70, 200; --accent-color-inactive: 40, 60, 130; }
+.promptsTab { --accent-color: 0, 200, 180; --accent-color-inactive: 50, 130, 120; }
+.card { --accent-color: 0, 240, 255; --accent-color-inactive: 60, 130, 160; }
+.statusBar { --accent-color: 255, 179, 0; --accent-color-inactive: 160, 120, 60; }
+.tutorial-modal { --accent-color: 168, 184, 200; --accent-color-inactive: 120, 130, 140; }
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(var(--accent-color), 0.4), 0 0 20px rgba(var(--accent-color), 0.1); }
+  50% { box-shadow: 0 0 16px rgba(var(--accent-color), 0.7), 0 0 40px rgba(var(--accent-color), 0.2); }
+}
+
+@keyframes glowSlide {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
