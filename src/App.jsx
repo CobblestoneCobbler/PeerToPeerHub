@@ -274,6 +274,8 @@ function AppInner() {
       reservedPrompts = [];
       localStorage.setItem("reserved", JSON.stringify(reservedPrompts));
       setIsReserved(false);
+    } else if (response?.error) {
+      addToast(response.message || "Data submission failed. Please try again.", 'error');
     } else {
       addToast("Data submission failed. Please try again.", 'error');
     }
@@ -370,6 +372,12 @@ function StatusBar({uuid}){
   useEffect(() => {
     async function updateStatus() {
       let response = await getStatus(uuid);
+
+      if (response?.error) {
+        setStatus(response.status || "error");
+        return;
+      }
+
       let current = response?.status || response;
       setStatus(current);
       setTotalCards(response?.totalCards || 0);
@@ -379,6 +387,12 @@ function StatusBar({uuid}){
       while(isMountedRef.current && !(current === "completed" || current === 'completed with failures' )){
         await new Promise(res => setTimeout(res, 30000));
         response = await getStatus(uuid);
+
+        if (response?.error) {
+          setStatus(response.status || "error");
+          break;
+        }
+
         current = response?.status || response;
         setStatus(current);
         setTotalCards(response?.totalCards || 0);
@@ -391,11 +405,13 @@ function StatusBar({uuid}){
     return () => { isMountedRef.current = false; };
   }, [uuid]);
 
+  const statusLabel = status === "not_found" ? "Submission not found" : status === "error" ? "Error checking submission status" : status;
+
   return (
     <div className={`statusBar ${status}`}>
       <div className="innerStatusBar">
         <div>Submission Status</div>
-        <div className="status">{status}</div>
+        <div className="status">{status === null ? "Checking..." : statusLabel}</div>
         <div className="stats">
           <div>Total Cards: {totalCards}</div>
           {failedCards !== 0 && <div className="failed-cards">Failed Cards: {failedCards}</div>}

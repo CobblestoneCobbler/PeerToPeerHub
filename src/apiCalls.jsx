@@ -58,11 +58,21 @@ export async function postData(data){
             body: JSON.stringify(data)
     });
 
-    if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-    }
+        if (!res.ok) {
+            let errorMsg = `Server error: ${res.status}`;
+            try {
+                const errorBody = await res.json();
+                if (errorBody?.message) errorMsg = errorBody.message;
+            } catch (e) {}
+            throw new Error(errorMsg);
+        }
 
-    return await res.json();
+        try {
+            return await res.json();
+        } catch (parseErr) {
+            console.error("Failed to parse JSON response:", parseErr);
+            return { error: true, message: "Failed to parse server response" };
+        }
     } catch (err) {
         console.error("Submit failed:", err);
         return { error: true, message: err.message };
@@ -82,6 +92,10 @@ export async function getStatus(uuid){
                 "x-api-key": apiKey
             }
         });
+
+        if (res.status === 404) {
+            return { error: true, message: "Batch not found", status: "not_found" };
+        }
 
         if (!res.ok) {
             throw new Error(`Server error: ${res.status}`);
