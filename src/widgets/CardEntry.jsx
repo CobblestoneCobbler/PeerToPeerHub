@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { capitalizeFirstLetter } from "./helperFunctions";
 import { useToast } from "../App";
 
-export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows, recordPrompts}){
+export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows}){
     const addToast = useToast();
     const [submitted, setSubmitted] = useState(false);
     const [giverFirstName, setGiverFirstName] = useState("");
@@ -11,6 +11,7 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
     const [giver,setGiverBool] = useState(false);
     const [collapsed, setCollapsed] = useState({});
     const [stuckGroups, setStuckGroups] = useState({});
+    const [confirmOpen, setConfirmOpen] = useState(false);
     const firstNameRef = useRef(null);
 
     useEffect(()=>{
@@ -48,7 +49,21 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
         return ()=>observer.disconnect();
     }, [groupNames.join(',')]);
 
-    const gridStyle = { gridTemplateColumns: `200px repeat(${prompts.length}, 1fr)` };
+    const cellsStyle = { gridTemplateColumns: `repeat(${prompts.length}, minmax(0, 1fr))` };
+
+    const handleGiverSubmit = () => {
+        if(giverFirstName==="" || giverLastName === ""){
+            addToast("You must provide your name.", 'error');
+            return;
+        }
+        if(manager === ""){
+            addToast("You must provide a manager name.", 'error');
+            return;
+        }
+        setManager(manager);
+        setGiver(giverFirstName,giverLastName);
+        setGiverBool(true);
+    };
 
     return (
         <>
@@ -59,36 +74,25 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     {/*TODO Submit attempt on loose focus? */}
                     <input ref={firstNameRef} type="text" id="giverFirstName" placeholder="Your First Name" autoComplete="off" value={giverFirstName} onChange={(e)=>{
                         setGiverFirstName(capitalizeFirstLetter(e.target.value));
-                    }}/>
+                    }} onKeyDown={(e)=>{ if(e.key === "Enter") handleGiverSubmit(); }}/>
                     <input type="text" id="giverLastName" placeholder="Your Last Name" autoComplete="off" value={giverLastName} onChange={(e)=>{
                         setGiverLastName(capitalizeFirstLetter(e.target.value));
-                    }}/>
+                    }} onKeyDown={(e)=>{ if(e.key === "Enter") handleGiverSubmit(); }}/>
                     <input type="text" id="managerName" placeholder="Manager Full Name" value={manager} onChange={(e)=>{
                         setManagerName(capitalizeFirstLetter(e.target.value));
-                    }}/>
-                    <div className="submit" onClick={()=>{
-                        if(giverFirstName==="" || giverLastName === ""){
-                            addToast("You must provide your name.", 'error');
-                            return;
-                        }
-                        if(manager === ""){
-                            addToast("You must provide a manager name.", 'error');
-                            return;
-                        }
-                        setManager(manager);
-                        setGiver(giverFirstName,giverLastName);
-                        setGiverBool(true);
-
-                    }}>Submit</div>
+                    }} onKeyDown={(e)=>{ if(e.key === "Enter") handleGiverSubmit(); }}/>
+                    <div className="submit" onClick={handleGiverSubmit}>Submit</div>
                 </div>}
 
-                <div className="title-row" style={gridStyle}>
+                <div className="title-row">
                     <div className="title-name">Operator</div>
-                    {prompts.map((p, i)=>{
-                        return(
-                            <div className="title-prompt" key={`prompt${i}`}>{p.nick}</div>
-                        )
-                    })}
+                    <div className="title-cells" style={cellsStyle}>
+                        {prompts.map((p, i)=>{
+                            return(
+                                <div className="title-prompt" key={`prompt${i}`}>{p.nick}</div>
+                            )
+                        })}
+                    </div>
                 </div>
 
                 {Object.keys(groups).map((groupName)=>{
@@ -96,7 +100,7 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     const isCollapsed = collapsed[groupName];
                     return (
                         <div className={`group-block ${isCollapsed? "collapsed" : ""}`} key={`group-${groupName}`}>
-                            <div ref={el => headerRefs.current[groupName] = el} data-group={groupName} className={`group-header ${stuckGroups[groupName]? "stuck" : ""}`} style={gridStyle}>
+                            <div ref={el => headerRefs.current[groupName] = el} data-group={groupName} className={`group-header ${stuckGroups[groupName]? "stuck" : ""}`}>
                                 <div className="group-header-left">
                                     <button className="collapse-btn" onClick={(e) => {
                                         e.stopPropagation();
@@ -111,28 +115,30 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                                         })
                                     }}>{groupName}</span>
                                 </div>
-                                {prompts.map((_, pi) => {
-                                    const pi1 = pi + 1;
-                                    let hasTrue = false, hasFalse = false;
-                                    for (const {row} of items) {
-                                        if (row[pi1]) hasTrue = true;
-                                        else hasFalse = true;
-                                        if (hasTrue && hasFalse) break;
-                                    }
-                                    const status = hasTrue && hasFalse ? 'mixed' : hasTrue ? 'all-true' : 'all-false';
-                                    return (
-                                        <div key={`gs-${pi1}`} className={`group-status ${status}`} onClick={() => {
-                                            changeRows((x,y,r) => {
-                                                if(rows[x] && rows[x][0] && rows[x][0].group === groupName && y === pi1){
-                                                    return hasTrue && !hasFalse ? false : true;
-                                                }
-                                                return r;
-                                            })
-                                        }}>
-                                            {status === 'all-true' ? <CheckIcon /> : status === 'mixed' ? <DashIcon /> : <CrossIcon />}
-                                        </div>
-                                    )
-                                })}
+                                <div className="header-cells" style={cellsStyle}>
+                                    {prompts.map((_, pi) => {
+                                        const pi1 = pi + 1;
+                                        let hasTrue = false, hasFalse = false;
+                                        for (const {row} of items) {
+                                            if (row[pi1]) hasTrue = true;
+                                            else hasFalse = true;
+                                            if (hasTrue && hasFalse) break;
+                                        }
+                                        const status = hasTrue && hasFalse ? 'mixed' : hasTrue ? 'all-true' : 'all-false';
+                                        return (
+                                            <div key={`gs-${pi1}`} className={`group-status ${status}`} onClick={() => {
+                                                changeRows((x,y,r) => {
+                                                    if(rows[x] && rows[x][0] && rows[x][0].group === groupName && y === pi1){
+                                                        return hasTrue && !hasFalse ? false : true;
+                                                    }
+                                                    return r;
+                                                })
+                                            }}>
+                                                {status === 'all-true' ? <CheckIcon /> : status === 'mixed' ? <DashIcon /> : <CrossIcon />}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
 
                             {!isCollapsed && items.map(({row, idx}) => (
@@ -142,17 +148,32 @@ export function CardEntry({ submit,setManager,setGiver,rows, prompts, changeRows
                     )
                 })}
 
-                {submitted? "":<div className="submit submit-sticky" onClick={() =>{ submit()? setSubmitted(true):null;}}>Submit</div>}
+                {submitted? "":<div className="submit submit-sticky" onClick={() =>{ setConfirmOpen(true);}}>Submit</div>}
             </div>
+
+            {confirmOpen && (
+                <div className="confirm-overlay" onClick={() => setConfirmOpen(false)}>
+                    <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+                        <p>I certify that I have notified these employees that I am recognizing them.</p>
+                        <div className="confirm-actions">
+                            <div className="confirm-no" onClick={() => setConfirmOpen(false)}>No</div>
+                            <div className="confirm-yes" onClick={() => {
+                                setConfirmOpen(false);
+                                if(submit()) setSubmitted(true);
+                            }}>Yes</div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
 
 function operatorRow(row, index, changeRows, promptCount){
-    const gridStyle = { gridTemplateColumns: `200px repeat(${promptCount}, 1fr)` };
+    const cellsStyle = { gridTemplateColumns: `repeat(${promptCount}, minmax(0, 1fr))` };
 
     return (
-        <div className="operator-row" style={gridStyle} key={`operator-${index}`}>
+        <div className="operator-row" key={`operator-${index}`}>
             <div className="operator" onClick={() => {
                 changeRows((x,y,r) =>{
                     if(x === index){
@@ -162,19 +183,21 @@ function operatorRow(row, index, changeRows, promptCount){
                 });
             }}>{row[0].firstName}, {row[0].lastName}</div>
 
-            {row.map((r,i) => {
-                if(i === 0) return null;
-                return (
-                    <div className="checkbox" key={`slot${i}`} onClick={() =>{
-                        changeRows((x,y,rp) =>{
-                            if(x === index && y === i){
-                                return rp?false:true;
-                            }
-                            return rp;
-                        })
-                    }}>{r ? <CheckIcon /> : <CrossIcon />}</div>
-                )
-            })}
+            <div className="row-cells" style={cellsStyle}>
+                {row.map((r,i) => {
+                    if(i === 0) return null;
+                    return (
+                        <div className="checkbox" key={`slot${i}`} onClick={() =>{
+                            changeRows((x,y,rp) =>{
+                                if(x === index && y === i){
+                                    return rp?false:true;
+                                }
+                                return rp;
+                            })
+                        }}>{r ? <CheckIcon /> : <CrossIcon />}</div>
+                    )
+                })}
+            </div>
         </div>
     )
 }

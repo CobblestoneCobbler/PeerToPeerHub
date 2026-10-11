@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export function PromptGiver({prompts, promptReserve, setActiveTab}){
     
@@ -65,13 +65,25 @@ function getPrompts(prompts, quantity){
 function ListPrompts({prompts,promptReserve, setActiveTab}){
     const [display,setDisplay] = useState(false);
     const [selected, setSelected] = useState({});
+    const listRef = useRef(null);
 
+    const toggleDisplay = () => {
+        const next = !display;
+        setDisplay(next);
+        if(next && typeof window !== 'undefined'){
+            setTimeout(() => {
+                if(listRef.current && typeof listRef.current.scrollIntoView === 'function'){
+                    listRef.current.scrollIntoView({behavior:'smooth', block:'start'});
+                }
+            }, 0);
+        }
+    };
 
     return(
         <>
             <div className="promptList">
-                <div className="title list-prompts" onClick={()=>setDisplay(display? false:true)}>List Prompts</div>
-                {display && <div className="list">
+                <div className="title list-prompts" onClick={toggleDisplay}>List Prompts</div>
+                {display && <div className="list" ref={listRef}>
                     {getPrompts(prompts, prompts.length).map((n,i)=>(
                         <div key={n.nick} className={`prompt ${selected[n.nick]? "active": "" }`} onClick={()=>{setSelected(prev => ({...prev, [n.nick]: !prev[n.nick]}))}}>{n.nick}</div>
                     ))}

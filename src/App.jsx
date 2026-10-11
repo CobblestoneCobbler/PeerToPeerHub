@@ -323,7 +323,7 @@ function AppInner() {
             </div>
           );
         }
-        return <CardEntry submit={onSubmit} setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} recordPrompts={recordPrompts} />;
+        return <CardEntry submit={onSubmit} setManager={setManager} setGiver={setGiver} rows={rows} prompts={reservedPrompts} setRows={updateRows} setEntireRow={updateEntireRow} changeRows={changeRows} />;
       default:
         return null;
     }
